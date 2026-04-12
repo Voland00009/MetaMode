@@ -1,5 +1,17 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python hooks/session_start.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "SessionEnd": [
       {
         "matcher": "",
@@ -20,6 +32,18 @@
             "type": "command",
             "command": "uv run python hooks/pre-compact.py",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "^!save",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python hooks/user_prompt_submit.py",
+            "timeout": 5
           }
         ]
       }
