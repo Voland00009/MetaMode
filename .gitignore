@@ -17,6 +17,9 @@ reports/
 .vscode/
 .idea/
 
+# Obsidian
+knowledge/.obsidian/
+
 # OS
 .DS_Store
 Thumbs.db

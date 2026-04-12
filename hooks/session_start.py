@@ -11,10 +11,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 KNOWLEDGE_DIR = ROOT / "knowledge"
 DAILY_DIR = ROOT / "daily"
+RAW_DIR = ROOT / "raw"
 INDEX_FILE = KNOWLEDGE_DIR / "index.md"
 SCRIPTS_DIR = ROOT / "scripts"
 PENDING_REVIEW_FILE = SCRIPTS_DIR / "pending-review.md"
 STATE_FILE = SCRIPTS_DIR / "state.json"
+
+RAW_EXTENSIONS = {".md", ".txt"}
 
 MAX_CONTEXT_CHARS = 20_000
 MAX_LOG_LINES = 30
@@ -79,6 +82,24 @@ def get_compile_reminder() -> str:
     )
 
 
+def get_raw_reminder() -> str:
+    """Check if raw/ has unprocessed files."""
+    if not RAW_DIR.exists():
+        return ""
+    files = [
+        f for f in RAW_DIR.iterdir()
+        if f.is_file() and f.suffix in RAW_EXTENSIONS and f.name != "README.md"
+    ]
+    if not files:
+        return ""
+    names = ", ".join(f.name for f in files[:5])
+    suffix = f" (and {len(files) - 5} more)" if len(files) > 5 else ""
+    return (
+        f"{len(files)} unprocessed file(s) in `raw/`: {names}{suffix}. "
+        f"Say 'обработай RAW' or run `uv run python scripts/ingest_raw.py`."
+    )
+
+
 def build_context() -> str:
     """Build the full context string to inject at session start."""
     parts = []
@@ -107,6 +128,10 @@ def build_context() -> str:
     reminder = get_compile_reminder()
     if reminder:
         parts.append(f"## Compile Reminder\n\n{reminder}")
+
+    raw_reminder = get_raw_reminder()
+    if raw_reminder:
+        parts.append(f"## RAW Inbox\n\n{raw_reminder}")
 
     context = "\n\n---\n\n".join(parts)
 

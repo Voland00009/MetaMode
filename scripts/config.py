@@ -13,6 +13,7 @@ QA_DIR = KNOWLEDGE_DIR / "qa"
 REPORTS_DIR = ROOT_DIR / "reports"
 SCRIPTS_DIR = ROOT_DIR / "scripts"
 HOOKS_DIR = ROOT_DIR / "hooks"
+RAW_DIR = ROOT_DIR / "raw"
 AGENTS_FILE = ROOT_DIR / "AGENTS.md"
 
 INDEX_FILE = KNOWLEDGE_DIR / "index.md"

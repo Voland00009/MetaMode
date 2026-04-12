@@ -42,7 +42,6 @@ Persistent memory layer поверх Claude Code — fork coleam00/claude-memory
 - Session workflow: одна задача = одна сессия
 
 ## Что НЕ делать
-- Не использовать Mem0 cloud (97% junk при auto-extract, решение research synthesis)
 - Не использовать Claude Agent SDK напрямую (API billing, не Max)
 - Не добавлять LightRAG/vector DB (overkill для <1K docs, единогласно P1+P2+P3)
 - Не добавлять полный auto self-learning (drop'нут в v1, заменён на pending review)
@@ -56,13 +55,17 @@ Persistent memory layer поверх Claude Code — fork coleam00/claude-memory
 - `docs/vision_v2_full.md` — широкое видение MetaMode (контекст)
 - `docs/archive/` — legacy материалы
 
-## Hooks (будут после Phase B)
-- SessionStart: inject index.md + recent log + pending review + compile reminder
+## Hooks
+
+- SessionStart: inject index.md + recent log + pending review + compile reminder + RAW reminder
 - SessionEnd: extract transcript → flush.py (background)
 - PreCompact: страховка → flush.py (background)
 - UserPromptSubmit: `!save` interceptor
 
-## Открытые вопросы
-- Точный алгоритм замены SDK → CLI (Phase A)
-- Порядок реализации 6 модов (Phase A)
-- Obsidian setup и настройка (Phase A)
+## RAW Inbox
+
+Когда пользователь говорит "обработай RAW", "process RAW" или "я добавил статью в RAW":
+
+1. Прочитай файлы из `raw/` (кроме README.md и `raw/processed/`)
+2. Запусти `uv run python scripts/ingest_raw.py` — создаст wiki-статьи в `knowledge/concepts/` и `knowledge/connections/`, обновит `index.md`
+3. Обработанные файлы автоматически перемещаются в `raw/processed/`

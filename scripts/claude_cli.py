@@ -65,14 +65,13 @@ def run_claude_prompt(
     if system_prompt_file:
         cmd.extend(["--system-prompt-file", str(system_prompt_file)])
 
-    cmd.append(prompt)
-
     kwargs: dict = {
         "capture_output": True,
         "text": True,
         "encoding": "utf-8",
         "timeout": timeout,
         "cwd": str(cwd or ROOT_DIR),
+        "input": prompt,
     }
 
     # Windows: prevent console flash
