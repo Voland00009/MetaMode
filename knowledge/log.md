@@ -28,3 +28,8 @@
 - Result: SKIP — daily log contains only FLUSH_OK markers (6x). No sessions, concepts, or decisions to extract.
 - Articles created: none
 - Articles updated: none
+
+## [2026-04-12T11:26:44-07:00] ingest | Никита Ефимов.md
+- Source: raw/Никита Ефимов.md
+- Articles created: [[concepts/cc-hooks-lifecycle]], [[concepts/cc-skills-contextual-loading]], [[concepts/cc-mcp-server-integration]], [[concepts/cc-settings-local-vs-shared]], [[connections/hooks-skills-mcp-layered-automation]]
+- Articles updated: none
