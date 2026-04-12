@@ -8,6 +8,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import asyncio
 from pathlib import Path
 
 from config import KNOWLEDGE_DIR, REPORTS_DIR, now_iso, today_iso
@@ -132,9 +133,15 @@ def check_sparse_articles() -> list[dict]:
     return issues
 
 
-def check_contradictions() -> list[dict]:
-    """Use claude -p to detect contradictions across articles."""
-    from claude_cli import run_claude_prompt
+async def _check_contradictions_async() -> list[dict]:
+    """Use Claude Agent SDK to detect contradictions across articles."""
+    from claude_agent_sdk import (
+        AssistantMessage,
+        ClaudeAgentOptions,
+        ResultMessage,
+        TextBlock,
+        query,
+    )
 
     wiki_content = read_all_wiki_content()
 
@@ -160,8 +167,23 @@ If no issues found, output exactly: NO_ISSUES
 
 Do NOT output anything else - no preamble, no explanation, just the formatted lines."""
 
+    response = ""
+
     try:
-        response = run_claude_prompt(prompt, tools=[])
+        async for message in query(
+            prompt=prompt,
+            options=ClaudeAgentOptions(
+                cwd=str(ROOT_DIR),
+                allowed_tools=[],
+                max_turns=2,
+            ),
+        ):
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        response += block.text
+            elif isinstance(message, ResultMessage):
+                pass
     except Exception as e:
         return [{"severity": "error", "check": "contradiction", "file": "(system)", "detail": f"LLM check failed: {e}"}]
 
@@ -178,6 +200,11 @@ Do NOT output anything else - no preamble, no explanation, just the formatted li
                 })
 
     return issues
+
+
+def check_contradictions() -> list[dict]:
+    """Sync wrapper for contradiction check."""
+    return asyncio.run(_check_contradictions_async())
 
 
 def generate_report(all_issues: list[dict]) -> str:

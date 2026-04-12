@@ -8,7 +8,7 @@ Persistent memory layer поверх Claude Code — fork coleam00/claude-memory
 - Package manager: uv
 - Base: coleam00/claude-memory-compiler (fork)
 - Integration: Claude Code hooks (SessionStart, SessionEnd, PreCompact, UserPromptSubmit) + skills (/reflect)
-- LLM calls: `claude -p` (CLI headless, покрыт Max подпиской, $0/mo)
+- LLM calls: `claude-agent-sdk` (Claude Agent SDK, покрыт Max подпиской, $0/mo)
 - UI: Obsidian (knowledge/ как vault)
 - Versioning: git
 
@@ -21,7 +21,7 @@ Persistent memory layer поверх Claude Code — fork coleam00/claude-memory
 - daily/ → knowledge/ (concepts/, connections/, qa/)
 
 ### 6 модификаций:
-1. SDK → subprocess `claude -p` (flush, compile, lint, query)
+1. ~~SDK → subprocess `claude -p`~~ Migrated back to SDK (2026-04-12, SDK confirmed on Max)
 2. `!save` interceptor hook (UserPromptSubmit, quick capture)
 3. `/reflect` skill (structured рефлексия, 4 вопроса)
 4. Pending review в flush.py (полу-авто: предлагает → user approves)
@@ -42,7 +42,7 @@ Persistent memory layer поверх Claude Code — fork coleam00/claude-memory
 - Session workflow: одна задача = одна сессия
 
 ## Что НЕ делать
-- Не использовать Claude Agent SDK напрямую (API billing, не Max)
+- ~~Не использовать Claude Agent SDK напрямую~~ SDK подтверждён на Max (2026-04-12)
 - Не добавлять LightRAG/vector DB (overkill для <1K docs, единогласно P1+P2+P3)
 - Не добавлять полный auto self-learning (drop'нут в v1, заменён на pending review)
 - Не тащить legacy mentor protocol из docs/archive/

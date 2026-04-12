@@ -8,24 +8,30 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import asyncio
 import sys
 from pathlib import Path
 
 from config import KNOWLEDGE_DIR, QA_DIR, now_iso
 from utils import load_state, read_all_wiki_content, save_state
-from claude_cli import run_claude_prompt
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
 
-def run_query(question: str, file_back: bool = False) -> str:
+async def run_query(question: str, file_back: bool = False) -> str:
+    from claude_agent_sdk import (
+        AssistantMessage,
+        ClaudeAgentOptions,
+        ResultMessage,
+        TextBlock,
+        query,
+    )
+
     wiki_content = read_all_wiki_content()
 
     tools = ["Read", "Glob", "Grep"]
-    permission_mode = None
     if file_back:
         tools.extend(["Write", "Edit"])
-        permission_mode = "acceptEdits"
 
     file_back_instructions = ""
     if file_back:
@@ -68,11 +74,27 @@ consulting the knowledge base below.
 {question}
 {file_back_instructions}"""
 
-    answer = run_claude_prompt(
-        prompt,
-        tools=tools,
-        permission_mode=permission_mode,
-    )
+    answer = ""
+
+    try:
+        async for message in query(
+            prompt=prompt,
+            options=ClaudeAgentOptions(
+                cwd=str(ROOT_DIR),
+                system_prompt={"type": "preset", "preset": "claude_code"},
+                allowed_tools=tools,
+                permission_mode="acceptEdits" if file_back else None,
+                max_turns=15,
+            ),
+        ):
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        answer += block.text
+            elif isinstance(message, ResultMessage):
+                pass
+    except Exception as e:
+        answer = f"Error querying knowledge base: {e}"
 
     state = load_state()
     state["query_count"] = state.get("query_count", 0) + 1
@@ -92,7 +114,7 @@ def main():
     print(f"File back: {'yes' if args.file_back else 'no'}")
     print("-" * 60)
 
-    answer = run_query(args.question, file_back=args.file_back)
+    answer = asyncio.run(run_query(args.question, file_back=args.file_back))
     print(answer)
 
     if args.file_back:

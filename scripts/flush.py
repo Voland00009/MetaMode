@@ -1,4 +1,4 @@
-"""Memory flush — extracts knowledge from conversation context via claude -p.
+"""Memory flush — extracts knowledge from conversation context via Claude Agent SDK.
 
 Spawned by session-end.py or pre-compact.py as a background process.
 
@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 os.environ["CLAUDE_INVOKED_BY"] = "memory_flush"
 
+import asyncio
 import json
 import logging
 import sys
@@ -63,9 +64,15 @@ def append_to_daily_log(content: str, section: str = "Session") -> None:
         f.write(entry)
 
 
-def run_flush(context: str) -> str:
-    """Use claude -p to extract knowledge from conversation context."""
-    from claude_cli import run_claude_prompt
+async def run_flush(context: str) -> str:
+    """Use Claude Agent SDK to extract knowledge from conversation context."""
+    from claude_agent_sdk import (
+        AssistantMessage,
+        ClaudeAgentOptions,
+        ResultMessage,
+        TextBlock,
+        query,
+    )
 
     prompt = f"""Review the conversation context below and respond with a concise summary
 of important items that should be preserved in the daily log.
@@ -99,11 +106,26 @@ respond with exactly: FLUSH_OK
 
 {context}"""
 
+    response = ""
+
     try:
-        response = run_claude_prompt(prompt, tools=[])
+        async for message in query(
+            prompt=prompt,
+            options=ClaudeAgentOptions(
+                cwd=str(ROOT),
+                allowed_tools=[],
+                max_turns=2,
+            ),
+        ):
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        response += block.text
+            elif isinstance(message, ResultMessage):
+                pass
     except Exception as e:
         import traceback
-        logging.error("claude -p error: %s\n%s", e, traceback.format_exc())
+        logging.error("Agent SDK error: %s\n%s", e, traceback.format_exc())
         response = f"FLUSH_ERROR: {type(e).__name__}: {e}"
 
     return response
@@ -211,7 +233,7 @@ def main():
 
     logging.info("Flushing session %s: %d chars", session_id, len(context))
 
-    response = run_flush(context)
+    response = asyncio.run(run_flush(context))
 
     # MOD 4: Write to pending review instead of directly to daily log
     if "FLUSH_OK" in response:

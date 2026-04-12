@@ -12,6 +12,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import asyncio
 import shutil
 import sys
 from pathlib import Path
@@ -24,7 +25,6 @@ from utils import (
     read_wiki_index,
     save_state,
 )
-from claude_cli import run_claude_prompt
 
 PROCESSED_DIR = RAW_DIR / "processed"
 RAW_EXTENSIONS = {".md", ".txt"}
@@ -41,7 +41,7 @@ def list_raw_inbox() -> list[Path]:
     return files
 
 
-def ingest_raw_file(raw_path: Path, state: dict) -> None:
+async def ingest_raw_file(raw_path: Path, state: dict) -> None:
     """Process a single raw file into knowledge articles."""
     content = raw_path.read_text(encoding="utf-8")
     schema = AGENTS_FILE.read_text(encoding="utf-8")
@@ -123,13 +123,33 @@ Read the document above and extract knowledge into wiki articles following the s
 - Sources section should cite the raw file with specific claims extracted
 """
 
+    from claude_agent_sdk import (
+        AssistantMessage,
+        ClaudeAgentOptions,
+        ResultMessage,
+        TextBlock,
+        query,
+    )
+
+    ROOT_DIR = Path(__file__).resolve().parent.parent
+
     try:
-        run_claude_prompt(
-            prompt,
-            tools=["Read", "Write", "Edit", "Glob", "Grep"],
-            permission_mode="acceptEdits",
-            timeout=600,
-        )
+        async for message in query(
+            prompt=prompt,
+            options=ClaudeAgentOptions(
+                cwd=str(ROOT_DIR),
+                system_prompt={"type": "preset", "preset": "claude_code"},
+                allowed_tools=["Read", "Write", "Edit", "Glob", "Grep"],
+                permission_mode="acceptEdits",
+                max_turns=30,
+            ),
+        ):
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        pass  # LLM writes files directly
+            elif isinstance(message, ResultMessage):
+                pass
     except Exception as e:
         print(f"  Error: {e}")
         return
@@ -184,7 +204,7 @@ def main():
 
     for i, raw_path in enumerate(to_ingest, 1):
         print(f"\n[{i}/{len(to_ingest)}] Ingesting {raw_path.name}...")
-        ingest_raw_file(raw_path, state)
+        asyncio.run(ingest_raw_file(raw_path, state))
         print(f"  Done.")
 
     articles = list_wiki_articles()

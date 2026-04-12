@@ -4,8 +4,10 @@ import json
 import sys
 import time
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import datetime
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
@@ -79,19 +81,33 @@ def test_write_pending_review_appends(tmp_path):
     assert "Entry 2" in content
 
 
-def test_run_flush_calls_claude_cli():
-    """run_flush should call run_claude_prompt with tools=[]."""
-    with patch("claude_cli.run_claude_prompt", return_value="FLUSH_OK") as mock:
-        result = flush.run_flush("Some conversation context")
+def _make_sdk_response(text: str):
+    """Create a mock async generator that yields an AssistantMessage with given text."""
+    from claude_agent_sdk import AssistantMessage, TextBlock
+
+    async def mock_query(**kwargs):
+        yield AssistantMessage(content=[TextBlock(text=text)], model="test")
+
+    return mock_query
+
+
+@pytest.mark.asyncio
+async def test_run_flush_calls_sdk():
+    """run_flush should call SDK query and return response text."""
+    mock_gen = _make_sdk_response("FLUSH_OK")
+    with patch("claude_agent_sdk.query", side_effect=mock_gen):
+        result = await flush.run_flush("Some conversation context")
         assert result == "FLUSH_OK"
-        mock.assert_called_once()
-        _, kwargs = mock.call_args
-        assert kwargs.get("tools") == []
 
 
-def test_run_flush_handles_error():
+@pytest.mark.asyncio
+async def test_run_flush_handles_error():
     """run_flush should catch exceptions and return error string."""
-    with patch("claude_cli.run_claude_prompt", side_effect=RuntimeError("CLI failed")):
-        result = flush.run_flush("Context")
+    async def failing_query(**kwargs):
+        raise RuntimeError("SDK failed")
+        yield  # make it an async generator  # noqa: E501
+
+    with patch("claude_agent_sdk.query", side_effect=failing_query):
+        result = await flush.run_flush("Context")
         assert "FLUSH_ERROR" in result
         assert "RuntimeError" in result

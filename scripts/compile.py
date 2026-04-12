@@ -10,6 +10,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import asyncio
 import sys
 from pathlib import Path
 
@@ -22,13 +23,20 @@ from utils import (
     read_wiki_index,
     save_state,
 )
-from claude_cli import run_claude_prompt
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
 
-def compile_daily_log(log_path: Path, state: dict) -> None:
+async def compile_daily_log(log_path: Path, state: dict) -> None:
     """Compile a single daily log into knowledge articles."""
+    from claude_agent_sdk import (
+        AssistantMessage,
+        ClaudeAgentOptions,
+        ResultMessage,
+        TextBlock,
+        query,
+    )
+
     log_content = log_path.read_text(encoding="utf-8")
     schema = AGENTS_FILE.read_text(encoding="utf-8")
     wiki_index = read_wiki_index()
@@ -110,12 +118,22 @@ Read the daily log above and compile it into wiki articles following the schema 
 """
 
     try:
-        run_claude_prompt(
-            prompt,
-            tools=["Read", "Write", "Edit", "Glob", "Grep"],
-            permission_mode="acceptEdits",
-            timeout=600,
-        )
+        async for message in query(
+            prompt=prompt,
+            options=ClaudeAgentOptions(
+                cwd=str(ROOT_DIR),
+                system_prompt={"type": "preset", "preset": "claude_code"},
+                allowed_tools=["Read", "Write", "Edit", "Glob", "Grep"],
+                permission_mode="acceptEdits",
+                max_turns=30,
+            ),
+        ):
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        pass  # compilation output — LLM writes files directly
+            elif isinstance(message, ResultMessage):
+                pass
     except Exception as e:
         print(f"  Error: {e}")
         return
@@ -173,7 +191,7 @@ def main():
 
     for i, log_path in enumerate(to_compile, 1):
         print(f"\n[{i}/{len(to_compile)}] Compiling {log_path.name}...")
-        compile_daily_log(log_path, state)
+        asyncio.run(compile_daily_log(log_path, state))
         print(f"  Done.")
 
     articles = list_wiki_articles()
