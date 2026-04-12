@@ -119,3 +119,24 @@ def test_run_claude_prompt_raw_text_fallback():
     with patch("claude_cli.subprocess.run", return_value=mock_result):
         result = run_claude_prompt("Simple question")
         assert result == "Just plain text response"
+
+
+def test_run_claude_prompt_string_result():
+    """run_claude_prompt should handle result as plain string (not array).
+
+    Bug found in B.4: claude -p can return {"result": "text"} instead of
+    {"result": [{"type": "text", "text": "text"}]}. Iterating over a string
+    yields individual characters, producing character-per-line output.
+    """
+    mock_result = MagicMock()
+    mock_result.returncode = 0
+    mock_result.stdout = json.dumps({
+        "result": "FLUSH_OK",
+        "session_id": "test-456",
+        "is_error": False
+    })
+
+    with patch("claude_cli.subprocess.run", return_value=mock_result):
+        result = run_claude_prompt("Flush this")
+        assert result == "FLUSH_OK"
+        assert "\n" not in result  # must NOT be "F\nL\nU\nS\nH\n_\nO\nK"

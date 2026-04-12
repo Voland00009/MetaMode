@@ -98,9 +98,14 @@ def run_claude_prompt(
         raise RuntimeError(f"claude -p returned error: {data}")
 
     # Extract text from result blocks
-    result_blocks = data.get("result", [])
+    result_data = data.get("result", "")
+
+    # result can be a plain string or a list of content blocks
+    if isinstance(result_data, str):
+        return result_data
+
     text_parts = []
-    for block in result_blocks:
+    for block in result_data:
         if isinstance(block, dict) and block.get("type") == "text":
             text_parts.append(block.get("text", ""))
         elif isinstance(block, str):
