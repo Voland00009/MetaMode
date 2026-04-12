@@ -9,3 +9,8 @@ dependencies = [
 
 [tool.ruff]
 line-length = 100
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
