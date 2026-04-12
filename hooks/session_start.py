@@ -1,4 +1,4 @@
-"""SessionStart hook — injects KB context + pending review + compile reminder.
+"""SessionStart hook — injects KB context + compile reminder.
 
 Outputs JSON to stdout with additionalContext for Claude to see.
 """
@@ -14,7 +14,6 @@ DAILY_DIR = ROOT / "daily"
 RAW_DIR = ROOT / "raw"
 INDEX_FILE = KNOWLEDGE_DIR / "index.md"
 SCRIPTS_DIR = ROOT / "scripts"
-PENDING_REVIEW_FILE = SCRIPTS_DIR / "pending-review.md"
 STATE_FILE = SCRIPTS_DIR / "state.json"
 
 RAW_EXTENSIONS = {".md", ".txt"}
@@ -37,14 +36,6 @@ def get_recent_log() -> str:
             recent = lines[-MAX_LOG_LINES:] if len(lines) > MAX_LOG_LINES else lines
             return "\n".join(recent)
     return "(no recent daily log)"
-
-
-def get_pending_review() -> str:
-    """MOD 4: Read pending review items for user approval."""
-    if not PENDING_REVIEW_FILE.exists():
-        return ""
-    content = PENDING_REVIEW_FILE.read_text(encoding="utf-8").strip()
-    return content if content else ""
 
 
 def get_compile_reminder() -> str:
@@ -115,15 +106,6 @@ def build_context() -> str:
 
     recent_log = get_recent_log()
     parts.append(f"## Recent Daily Log\n\n{recent_log}")
-
-    pending = get_pending_review()
-    if pending:
-        parts.append(
-            f"## Pending Review\n\n"
-            f"The following knowledge was extracted from recent sessions and needs your review.\n"
-            f"Reply 'approve' to save to daily log, 'reject' to discard, or 'edit' to modify.\n\n"
-            f"{pending}"
-        )
 
     reminder = get_compile_reminder()
     if reminder:

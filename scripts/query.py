@@ -75,6 +75,7 @@ consulting the knowledge base below.
 {file_back_instructions}"""
 
     answer = ""
+    cost = 0.0
 
     try:
         async for message in query(
@@ -92,12 +93,15 @@ consulting the knowledge base below.
                     if isinstance(block, TextBlock):
                         answer += block.text
             elif isinstance(message, ResultMessage):
-                pass
+                if message.total_cost_usd:
+                    cost = message.total_cost_usd
     except Exception as e:
         answer = f"Error querying knowledge base: {e}"
 
     state = load_state()
     state["query_count"] = state.get("query_count", 0) + 1
+    if cost:
+        state["total_cost"] = state.get("total_cost", 0.0) + cost
     save_state(state)
 
     return answer

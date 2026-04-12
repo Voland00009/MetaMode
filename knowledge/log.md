@@ -33,3 +33,8 @@
 - Source: raw/Никита Ефимов.md
 - Articles created: [[concepts/cc-hooks-lifecycle]], [[concepts/cc-skills-contextual-loading]], [[concepts/cc-mcp-server-integration]], [[concepts/cc-settings-local-vs-shared]], [[connections/hooks-skills-mcp-layered-automation]]
 - Articles updated: none
+
+## [2026-04-12T13:26:05-07:00] ingest | metamode-vs-coleam00-audit.md
+- Source: raw/metamode-vs-coleam00-audit.md
+- Articles created: [[concepts/human-in-the-loop-quality-gate]], [[concepts/fork-dont-rewrite]], [[concepts/per-project-vs-global-tool-config]], [[concepts/multi-source-knowledge-ingestion]], [[connections/quality-vs-automation-tradeoff]]
+- Articles updated: none

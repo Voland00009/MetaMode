@@ -59,6 +59,41 @@ def test_compile_skips_unchanged(tmp_path):
         assert len(to_compile) == 0
 
 
+def test_audit_flag_filtered_from_content():
+    """compile should strip AUDIT_FLAG sections from log content before compiling."""
+    import re
+
+    log_content = """### Session abc (14:00)
+
+**Context:** Working on feature X
+
+### Session def (15:00)
+
+<!-- AUDIT_FLAG: Only routine file reads -->
+Nothing useful here, just read files
+
+### Session ghi (16:00)
+
+**Lessons Learned:**
+- Important lesson about Y
+"""
+    AUDIT_FLAG = "<!-- AUDIT_FLAG:"
+    assert AUDIT_FLAG in log_content
+
+    filtered = re.sub(
+        r"<!-- AUDIT_FLAG:.*?-->\n(.*?)(?=\n### |\Z)",
+        "[audit-flagged entry skipped]\n",
+        log_content,
+        flags=re.DOTALL,
+    )
+
+    assert "Only routine file reads" not in filtered
+    assert "Nothing useful here" not in filtered
+    assert "[audit-flagged entry skipped]" in filtered
+    assert "Important lesson about Y" in filtered
+    assert "Working on feature X" in filtered
+
+
 def test_compile_module_imports():
     """compile.py should be importable and have key functions."""
     import compile

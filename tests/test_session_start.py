@@ -1,4 +1,4 @@
-"""Tests for session-start.py — context injection with pending review + compile reminder."""
+"""Tests for session-start.py — context injection with compile reminder."""
 
 import json
 import sys
@@ -31,33 +31,24 @@ def test_build_context_includes_index(tmp_path):
     with patch.object(mod, "KNOWLEDGE_DIR", knowledge_dir), \
          patch.object(mod, "INDEX_FILE", index_file), \
          patch.object(mod, "DAILY_DIR", tmp_path / "daily"), \
-         patch.object(mod, "PENDING_REVIEW_FILE", tmp_path / "nonexistent.md"), \
          patch.object(mod, "STATE_FILE", tmp_path / "state.json"):
         context = mod.build_context()
         assert "concepts/test" in context
 
 
-def test_build_context_includes_pending_review(tmp_path):
-    """MOD 4: Should include pending review items."""
+def test_build_context_no_pending_review(tmp_path):
+    """Pending review was removed — context should not contain it."""
     knowledge_dir = tmp_path / "knowledge"
     knowledge_dir.mkdir()
     (knowledge_dir / "index.md").write_text("Empty index", encoding="utf-8")
-
-    pending = tmp_path / "pending-review.md"
-    pending.write_text(
-        "---\nsession_id: abc\nstatus: pending\n---\n\nImportant lesson here\n\n---\n",
-        encoding="utf-8",
-    )
 
     mod = _fresh_import()
     with patch.object(mod, "KNOWLEDGE_DIR", knowledge_dir), \
          patch.object(mod, "INDEX_FILE", knowledge_dir / "index.md"), \
          patch.object(mod, "DAILY_DIR", tmp_path / "daily"), \
-         patch.object(mod, "PENDING_REVIEW_FILE", pending), \
          patch.object(mod, "STATE_FILE", tmp_path / "state.json"):
         context = mod.build_context()
-        assert "Pending Review" in context
-        assert "Important lesson here" in context
+        assert "Pending Review" not in context
 
 
 def test_build_context_compile_reminder(tmp_path):
@@ -81,7 +72,6 @@ def test_build_context_compile_reminder(tmp_path):
     with patch.object(mod, "KNOWLEDGE_DIR", knowledge_dir), \
          patch.object(mod, "INDEX_FILE", knowledge_dir / "index.md"), \
          patch.object(mod, "DAILY_DIR", daily_dir), \
-         patch.object(mod, "PENDING_REVIEW_FILE", tmp_path / "nonexistent.md"), \
          patch.object(mod, "STATE_FILE", state_file):
         context = mod.build_context()
         assert "Compile Reminder" in context
@@ -106,7 +96,6 @@ def test_build_context_no_reminder_when_few_logs(tmp_path):
     with patch.object(mod, "KNOWLEDGE_DIR", knowledge_dir), \
          patch.object(mod, "INDEX_FILE", knowledge_dir / "index.md"), \
          patch.object(mod, "DAILY_DIR", daily_dir), \
-         patch.object(mod, "PENDING_REVIEW_FILE", tmp_path / "nonexistent.md"), \
          patch.object(mod, "STATE_FILE", state_file):
         context = mod.build_context()
         assert "Compile Reminder" not in context
@@ -122,7 +111,6 @@ def test_main_outputs_json(tmp_path, capsys):
     with patch.object(mod, "KNOWLEDGE_DIR", knowledge_dir), \
          patch.object(mod, "INDEX_FILE", knowledge_dir / "index.md"), \
          patch.object(mod, "DAILY_DIR", tmp_path / "daily"), \
-         patch.object(mod, "PENDING_REVIEW_FILE", tmp_path / "nonexistent.md"), \
          patch.object(mod, "STATE_FILE", tmp_path / "state.json"):
         mod.main()
 

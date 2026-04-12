@@ -55,30 +55,34 @@ def test_dedup_skips_recent_flush(tmp_path):
         assert time.time() - state["timestamp"] < 60
 
 
-def test_write_pending_review(tmp_path):
-    """write_pending_review should create/append to pending-review.md."""
-    pending_file = tmp_path / "pending-review.md"
-
-    with patch.object(flush, "PENDING_REVIEW_FILE", pending_file):
-        flush.write_pending_review("Learned about X", "session-abc")
-
-    content = pending_file.read_text(encoding="utf-8")
-    assert "session-abc" in content
-    assert "Learned about X" in content
-    assert "status: pending" in content
+@pytest.mark.asyncio
+async def test_run_quality_audit_ok():
+    """Quality audit should return None when content is good."""
+    mock_gen = _make_sdk_response("QUALITY_OK")
+    with patch("claude_agent_sdk.query", side_effect=mock_gen):
+        result = await flush.run_quality_audit("Good content with lessons learned")
+        assert result is None
 
 
-def test_write_pending_review_appends(tmp_path):
-    """write_pending_review should append multiple entries."""
-    pending_file = tmp_path / "pending-review.md"
-    pending_file.write_text("# Existing entry\n", encoding="utf-8")
+@pytest.mark.asyncio
+async def test_run_quality_audit_reject():
+    """Quality audit should return reason string when content is junk."""
+    mock_gen = _make_sdk_response("AUDIT_REJECT: Only routine file reads")
+    with patch("claude_agent_sdk.query", side_effect=mock_gen):
+        result = await flush.run_quality_audit("Routine stuff")
+        assert result == "Only routine file reads"
 
-    with patch.object(flush, "PENDING_REVIEW_FILE", pending_file):
-        flush.write_pending_review("Entry 2", "session-def")
 
-    content = pending_file.read_text(encoding="utf-8")
-    assert "# Existing entry" in content
-    assert "Entry 2" in content
+@pytest.mark.asyncio
+async def test_run_quality_audit_error_returns_none():
+    """Quality audit should return None (assume OK) on SDK error."""
+    async def failing_query(**kwargs):
+        raise RuntimeError("SDK failed")
+        yield  # noqa: E501
+
+    with patch("claude_agent_sdk.query", side_effect=failing_query):
+        result = await flush.run_quality_audit("Some content")
+        assert result is None
 
 
 def _make_sdk_response(text: str):

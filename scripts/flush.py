@@ -122,7 +122,8 @@ respond with exactly: FLUSH_OK
                     if isinstance(block, TextBlock):
                         response += block.text
             elif isinstance(message, ResultMessage):
-                pass
+                if message.total_cost_usd:
+                    _accumulate_cost(message.total_cost_usd)
     except Exception as e:
         import traceback
         logging.error("Agent SDK error: %s\n%s", e, traceback.format_exc())
@@ -131,8 +132,85 @@ respond with exactly: FLUSH_OK
     return response
 
 
+def _accumulate_cost(cost_usd: float) -> None:
+    """Add cost to the main state.json (shared with compile/query)."""
+    from utils import load_state, save_state
+    state = load_state()
+    state["total_cost"] = state.get("total_cost", 0.0) + cost_usd
+    save_state(state)
+
+
 COMPILE_AFTER_HOUR = 18
-PENDING_REVIEW_FILE = SCRIPTS_DIR / "pending-review.md"
+AUDIT_FLAG = "<!-- AUDIT_FLAG:"
+
+
+async def run_quality_audit(content: str) -> str | None:
+    """Pass 2: Quick LLM check — does the extracted content contain junk?
+
+    Returns None if quality is OK, or a reason string if content is low-quality.
+    The caller marks the entry with an HTML comment but NEVER deletes it.
+    """
+    from claude_agent_sdk import (
+        AssistantMessage,
+        ClaudeAgentOptions,
+        ResultMessage,
+        TextBlock,
+        query,
+    )
+
+    audit_prompt = f"""You are a quality auditor for a personal knowledge base.
+Below is content that was auto-extracted from a Claude Code session.
+
+Your job: decide if this content is WORTH KEEPING in a daily log that will later
+be compiled into wiki articles.
+
+## Content to audit
+
+{content}
+
+## Quality criteria — mark as LOW quality if ALL of these are true:
+1. No concrete lessons learned (just "we did X, then Y")
+2. No decisions with rationale
+3. No reusable patterns or gotchas
+4. Only routine operations (file reads, installs, config changes)
+
+## IMPORTANT
+- Be CONSERVATIVE. When in doubt, say QUALITY_OK.
+- Most content IS worth keeping. Only flag obvious junk.
+- A session that records a single real decision or lesson = KEEP.
+
+## Response format
+If quality is OK: respond with exactly QUALITY_OK
+If low quality: respond with AUDIT_REJECT: <one-line reason>
+
+Respond with ONLY one of these two formats, nothing else."""
+
+    response = ""
+    try:
+        async for message in query(
+            prompt=audit_prompt,
+            options=ClaudeAgentOptions(
+                cwd=str(ROOT),
+                allowed_tools=[],
+                max_turns=1,
+            ),
+        ):
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        response += block.text
+            elif isinstance(message, ResultMessage):
+                if message.total_cost_usd:
+                    _accumulate_cost(message.total_cost_usd)
+    except Exception as e:
+        logging.warning("Quality audit failed (non-fatal): %s", e)
+        return None  # On error, assume quality is OK — never lose data
+
+    response = response.strip()
+    if response.startswith("AUDIT_REJECT:"):
+        reason = response[len("AUDIT_REJECT:"):].strip()
+        return reason
+    return None
 
 
 def maybe_trigger_compilation() -> None:
@@ -180,27 +258,6 @@ def maybe_trigger_compilation() -> None:
         logging.error("Failed to spawn compile.py: %s", e)
 
 
-def write_pending_review(content: str, session_id: str) -> None:
-    """MOD 4: Write extracted content to pending-review.md for human approval.
-
-    Instead of auto-appending to daily log, write to a staging file.
-    Session-start hook will show this for approve/reject.
-    """
-    timestamp = datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
-    entry = f"""---
-session_id: {session_id}
-timestamp: {timestamp}
-status: pending
----
-
-{content}
-
----
-"""
-    with open(PENDING_REVIEW_FILE, "a", encoding="utf-8") as f:
-        f.write(entry)
-
-
 def main():
     if len(sys.argv) < 3:
         logging.error("Usage: %s <context_file.md> <session_id>", sys.argv[0])
@@ -235,7 +292,6 @@ def main():
 
     response = asyncio.run(run_flush(context))
 
-    # MOD 4: Write to pending review instead of directly to daily log
     if "FLUSH_OK" in response:
         logging.info("Result: FLUSH_OK")
         append_to_daily_log("FLUSH_OK - Nothing worth saving from this session", "Memory Flush")
@@ -243,8 +299,15 @@ def main():
         logging.error("Result: %s", response)
         append_to_daily_log(response, "Memory Flush")
     else:
-        logging.info("Result: pending review (%d chars)", len(response))
-        write_pending_review(response, session_id)
+        # Pass 2: Quality audit — check if extracted content is worth keeping
+        audit_reason = asyncio.run(run_quality_audit(response))
+        if audit_reason:
+            logging.info("Audit flagged (%d chars): %s", len(response), audit_reason)
+            flagged_content = f"{AUDIT_FLAG} {audit_reason} -->\n{response}"
+            append_to_daily_log(flagged_content, f"Session {session_id[:8]}")
+        else:
+            logging.info("Result: saved to daily log (%d chars)", len(response))
+            append_to_daily_log(response, f"Session {session_id[:8]}")
 
     save_flush_state({"session_id": session_id, "timestamp": time.time()})
     context_file.unlink(missing_ok=True)

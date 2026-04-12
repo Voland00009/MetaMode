@@ -38,6 +38,19 @@ async def compile_daily_log(log_path: Path, state: dict) -> None:
     )
 
     log_content = log_path.read_text(encoding="utf-8")
+
+    # Filter out audit-flagged entries — they stay in the file but compile skips them
+    AUDIT_FLAG = "<!-- AUDIT_FLAG:"
+    if AUDIT_FLAG in log_content:
+        import re
+        # Remove sections that start with AUDIT_FLAG (flag line + content until next ###)
+        log_content = re.sub(
+            r"<!-- AUDIT_FLAG:.*?-->\n(.*?)(?=\n### |\Z)",
+            "[audit-flagged entry skipped]\n",
+            log_content,
+            flags=re.DOTALL,
+        )
+
     schema = AGENTS_FILE.read_text(encoding="utf-8")
     wiki_index = read_wiki_index()
 
@@ -133,7 +146,8 @@ Read the daily log above and compile it into wiki articles following the schema 
                     if isinstance(block, TextBlock):
                         pass  # compilation output — LLM writes files directly
             elif isinstance(message, ResultMessage):
-                pass
+                if message.total_cost_usd:
+                    state["total_cost"] = state.get("total_cost", 0.0) + message.total_cost_usd
     except Exception as e:
         print(f"  Error: {e}")
         return
