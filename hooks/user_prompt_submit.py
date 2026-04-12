@@ -54,7 +54,8 @@ def write_quick_save(text: str) -> Path:
 
 
 def main():
-    # Read hook input from stdin
+    # Read hook input from stdin (force UTF-8, Windows defaults to cp1251)
+    sys.stdin.reconfigure(encoding="utf-8")
     try:
         raw = sys.stdin.read()
         hook_input = json.loads(raw)

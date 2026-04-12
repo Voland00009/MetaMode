@@ -92,8 +92,8 @@ def extract_conversation_context(transcript_path: Path) -> tuple[str, int]:
 
 
 def main() -> None:
-    # Read hook input from stdin
-    # Claude Code on Windows may pass paths with unescaped backslashes
+    # Read hook input from stdin (force UTF-8, Windows defaults to cp1251)
+    sys.stdin.reconfigure(encoding="utf-8")
     try:
         raw_input = sys.stdin.read()
         try:
