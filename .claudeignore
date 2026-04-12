@@ -1,0 +1,27 @@
+# Build artifacts
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+
+# Large files
+uv.lock
+*.base
+*.canvas
+
+# Input materials (reference only, not code)
+input/
+
+# Processed RAW files
+raw/processed/
+
+# Obsidian internals
+.obsidian/
+
+# Session history
+plans/sessions/
+plans/archive/
+
+# Legacy docs
+docs/archive/
