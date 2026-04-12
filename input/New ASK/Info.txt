@@ -1,0 +1,21 @@
+Материалы по видео: Как сделать Claude Code в 10 раз умнее (бесплатно)
+
+Привет! Вот все ссылки из видео:
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+Obsidian — вторая память для Claude
+━━━━━━━━━━━━━━━━━━━━━━━━
+Скачать: obsidian.md (https://obsidian.md/)
+Web Clipper (сохранять страницы прямо в Obsidian): obsidian.md/clipper
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+LLM Wiki от Karpathy — паттерн автоматической базы знаний через ИИ
+━━━━━━━━━━━━━━━━━━━━━━━━
+Gist: gist.github.com/karpathy (https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+Твит с объяснением: x.com/karpathy (https://x.com/karpathy/status/2039805659525644595)
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+Claude Memory Compiler — автоматическая память для Claude Code
+━━━━━━━━━━━━━━━━━━━━━━━━
+GitHub: github.com/coleam00/claude-memory-compiler
+Что делает: сохраняет знания из каждой сессии, компилирует в базу знаний, Claude помнит всё между сессиями.

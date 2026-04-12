@@ -8,6 +8,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from config import KNOWLEDGE_DIR, QA_DIR, now_iso
@@ -81,6 +82,7 @@ consulting the knowledge base below.
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="Query the personal knowledge base")
     parser.add_argument("question", help="The question to ask")
     parser.add_argument("--file-back", action="store_true", help="File the answer back as Q&A")

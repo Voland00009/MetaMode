@@ -1,0 +1,495 @@
+Introspection of Thought Helps AI Agents
+Haoran Suna,b,*,1 and Shaoning Zenga,c,**
+aYangtze Delta Region Institute (Huzhou), University of Electronic and Science Technology of China, Huzhou,
+Zhejiang, China
+bSchool of Information and Software Engineering, University of Electronic and Science Technology of China,
+Chengdu, Sichuan, China
+cZhejiang Chuangjiekedong Ltd., Huzhou, Zhejiang, China
+
+1673573202779arXiv:2507.08664v1 [cs.AI] 11 Jul 2025
+arXiv:2507.08664v1 [cs.AI] 11 Jul 2025
+Abstract. AI Agents rely on Large Language Models (LLMs) and Multimodal-LLMs (MLLMs) to perform interpretation and infer- ence in text and image tasks without post-training, where LLMs and MLLMs play the most critical role and determine the initial ability and limitations of AI Agents. Usually, AI Agents utilize sophisti- cated prompt engineering and external reasoning framework to ob- tain a promising interaction with LLMs, e.g., Chain-of-Thought, Iter- ation of Thought and Image-of-Thought. However, they are still con- strained by the inherent limitations of LLM in understanding natural language, and the iterative reasoning process will generate a large amount of inference cost. To this end, we propose a novel AI Agent Reasoning Framework with Introspection of Thought (INoT) by de- signing a new LLM-Read code in prompt. It enables LLM to exe- cute programmatic dialogue reasoning processes following the code in prompt. Therefore, self-denial and reflection occur within LLM instead of outside LLM, which can reduce token cost effectively. Through our experiments on six benchmarks for three different tasks, the effectiveness of INoT is verified, with an average improvement of 7.95% in performance, exceeding the baselines. Furthermore, the token cost of INoT is lower on average than the best performing method at baseline by 58.3%. In addition, we demonstrate the ver- satility of INoT in image interpretation and inference through verifi- cation experiments.
+
+Introduction
+With the advancement of Large Language Models (LLM) and Mul- timodal LLMs (MLLM), from GPT-3 to modern models such as DeepSeek-V2.5 [6], GPT-4 [26], LLaVA [14] and Claude [1], mul- timedia reasoning tasks has undergone a significant transformation. LLMs are widely applied in various reasoning tasks [8, 37], particu- larly in mathematical reasoning [26], programming [8], text & image question answering [6, 37]. However, due to the limitations of the design and scale of LLMs themselves, they cannot handle very com- plex tasks alone [33]. AI Agent can help LLM solve more complex problems without post-training [12]. The basic core of AI Agent is the LLMs it constructs, which can conduct conversations, complete tasks, reason based on LLMs, and can demonstrate a certain degree of autonomous behavior [38]. The scale and design of the core LLM determine the initial capabilities and limitations of AI agents [33].
+53482269610
+∗ Email: 2022090916002@std.uestc.edu.cn.
+∗∗ Corresponding Author. Email: zeng@csj.uestc.edu.cn.
+1 Equal contribution.
+
+In order to improve the performance of LLM in AI Agent, prompt engineering plays an important role [28, 20, 24]. Prompt Engineer- ing seamlessly integrates a pre-trained LLM into downstream tasks without updating model parameters by inputting designed instruc- tions, and therefore guides the model to perform the expected behav- ior only through the given prompts [28]. Prompts can be natural lan- guage instructions that provide context to guide the model, or learn- ing vector representations that activate relevant knowledge [22, 16]. AI Agents come with various built-in prompts to provide guidance, allowing LLM to perform more diverse reasoning for different tasks [17]. This enables AI Agents to complete more complex tasks. How- ever, there are many ways to express the same operation in natural language. Different expressions can lead to bias in understanding in natural language, which can cause LLM not to think as expected [16]. To ensure that the final output of the AI Agent meets expecta- tions, the reasoning frameworks are integrated into the AI Agent [12]. Based on the guidance of prompt engineering, they enhance the performance of an AI Agent through various iterative methods [12]. As shown in Figure ??, the reasoning framework working in one single AI Agent, such as CoT, undergoes multiple chain itera- tive inferences in the AI Agent, reflecting and judging the results of each output of LLM until the results are considered reasonable [31]. Based on the inference of a single AI Agent, collaboration between multiple AI Agents performs better on various tasks and has become a promising method to enhance the capability of LLM, such as IoT, which allows multiple Agents to interact with each other and then
+
+iteratively generate results [24]. Through a continuous iterative di- alogue, the results can be optimized. ProgCo utilizes a code-level self-correction mechanism to guide LLM for error detection and im- provement through programmed feedback loops [29]. Although these methods have excellent performance in natural language tasks, they do not perform well in image interpretation and inference tasks [28]. Therefore, Image-of-Thought prompting guides the MLLMs to grad- ually perform visual inference by automatically designing image in- formation extraction operations, in order to improve the accuracy and interpretability of MLLM in image inference tasks [37]. How- ever, the above methods do not have great generality in multimedia inference tasks [16]. Meanwhile, although the reasoning framework improves the results of LLMs, this continuous iteration consumes a lot of token cost by constantly inputting and outputting to LLM [24, 20, 15].
+To solve the above problem, we propose a new LLM-Read code in prompt (named as PromptCode), and a novel AI Agent reasoning framework based on this prompt, named as Introspection of Thought (INoT). INoT defines and designs the LLM-Read code PromptCode in the prompt, and then put the complete reasoning logic code writ- ten by PromptCode into the prompt and make LLM reason accord- ing to the code logic. By using PromptCode reasoning logic, a vir- tual multi-agent debate reasoning logic code is built and executed in LLM. Therefore, self-denial and reflection occur within LLM instead of outside LLM. Our main contributions are summarized as follows.
+INoT uses code-integrated prompt to optimize LLM performance in zero-shot reasoning tasks by making LLM reason according to the reasoning logic code in prompt.
+INoT puts a continuous iterative reflection process into the LLM internal through the guidance of PromptCode logic. Self-denial and reflection occur when reasoning within LLM, as shown in Figure ??, so that the external does not need to interact with LLM multiple times, reducing the token cost of completing tasks using LLM.
+To evaluate INoT, Seven existing reasoning frameworks are se- lected as baselines and six datasets are selected as benchmarks in the areas of Math, Code, and QA tasks. Our INoT outperforms existing methods by an average of 11.6% on the benchmarks and the token cost of INoT is on average 58.3% lower than the best- performing method in baselines. In addition, we also demonstrate the versatility of INoT in image question answering tasks through validation experiments on three Image Q & A datasets.
+
+Related Work
+Prompt Engineering
+Prompt engineering has become a key technique for enhancing the capability of LLM and MLLM [28]. While the scale and design of LLM define its initial abilities and limitations, prompts can refine the performance of an AI Agent without modifying model parameters [17, 31]. By strategically designing task-specific instructions, prompt engineering enables LLMs to generate targeted outputs, adapting to various tasks [28, 30]. Unlike traditional methods that require retrain- ing or large-scale fine-tuning [7, 13], prompt engineering achieves task-specific improvements without extensive data or human input, offering a more efficient approach [13].
+With the widespread application of AI Agents, research on prompt engineering continues to evolve, particularly in natural language rea- soning and logic [28]. Initially, tasks were directly input into LLMs
+using the Input-Output (IO) approach, but due to the limitations of LLM, IO could only handle simple tasks. To address more complex tasks, Chain of Thought (CoT) prompts were introduced, mimick- ing human reasoning to guide LLMs [31]. However, CoT was ef- fective only for the sufficiently advanced LLMs and lacked consis- tency between the reasoning process and the model predictions [30]. To improve this problem, Self-Consistent Chain-of-Thought Distilla- tion (SCOTT) was developed, distilling a self-consistent CoT model from a much larger teacher model [30]. For even more complex rea- soning, LogiCoT, an instruction tuning dataset, was introduced to enhance logical reasoning and trigger general reasoning abilities in LLMs [15]. Image-of-Thought prompt helps MLLMs better under- stand complex scenes by gradually extracting key visual information, optimizing the performance of MLLMs [37].
+Furthermore, Iteration of Thought (IoT) framework was proposed to enhance the responsiveness of LLM by generating "thought- provoking" prompts for input queries and current iterative responses of LLMs [24]. Program of Thoughts (PoT) prompt significantly im- proves the accuracy and efficiency of numerical reasoning tasks by separating complex computational tasks and delegating them to ex- ternal program interpreters, solving the problem of computational er- rors in traditional methods [4]. The Program-driven Self-Correction (ProgCo) method achieves self-correction of the model by automat- ically generating and executing verification programs, significantly improving the inference performance in complex tasks and reduc- ing the misleading feedback of errors [29]. PoT and ProgCo com- bine programming ideas to optimize LLM, but they both generate real code and execute it in an external real environment, failing to make LLM truly programmatic inference. The above prompts are designed to optimize LLM or MLLM by constructing prompts for a certain task in natural language or images. There is no prompt that can universally optimize the performance of both LLM and MLLM. In addition, due to the limitations of understanding of natural lan- guage, LLM may not be able to strictly follow the guidance in natural language prompts for reasoning [28]. Therefore, in terms of guiding LLM reasoning, directly constructing the code for reasoning logic and putting it into the prompt, which will make the LLM strictly fol- low the code logic for reasoning and ensure the results more rigorous and accurate.
+
+AI Agent
+The advancement of LLMs has accelerated the progress of AI Agents [33, 12]. AI Agents extend beyond simple text generation by leverag- ing LLMs as their core computing engine, enabling dialogue, task ex- ecution, reasoning, and a degree of autonomy [18, 12]. Carefully de- signed prompts encode identity, instructions, authorization, and con- text to shape agent behavior [33]. While LLMs form the foundation of AI Agents, inference strategies and agent architectures are crucial [17]. Research has evolved from static, single-agent thought-chain prompts to dynamic, multi-agent dialogue systems [24, 31].
+Some people focus on optimizing a prompt to enable LLMs to complete specific tasks, while others utilize different proxy archi- tectures to optimize the performance of AI Agents. For example, an AI proxy library AgentLite was proposed, which simplified the innovation process of inference strategies, proxy architectures, and applications by providing a lightweight and user-friendly platform [17]. Instead of using static methods, a framework called Dynamic LLM-Powered Agent Network (DyLAN) was built, which collabo- rated on different tasks and domains with a dynamic communication structure for LLM-driven proxy collaboration, operating a two-stage
+
+534822-3357283Figure 1: A multimedia inference task is combined with INoT Prompt and passed to LLM, then LLM internally processes the task according to the guidance of reasoning logic code in prompt, enabling self-denial and reflection occur within LLM instead of outside LLM.
+
+paradigm: (1) team optimization, and (2) task resolution [18].
+All the above methods interact with only one single LLM. In ad- dition, multiple agents have been developed to communicate with each other for reasoning. For example, Iteration of Thought (IoT) framework, which enhanced the responsiveness of LLM by generat- ing thought-provoking prompts based on input queries and the cur- rent iterative response of LLM [24]. However, the token cost of cur- rent methods designed for the Agent architecture was extremely high. The final result depended on iterative optimization outside the LLM or dialogue between multiple LLMs [24, 17, 20]. These reflection processes required continuous inputs and outputs from LLMs, which generated a mass of inference costs [12]. If there is a method that can incorporate external iterative and dialogue processes into the LLM, it will save a lot of token costs.
+
+Method
+We propose the Introspection of Thought (INoT) framework, which defines a LLM-read code, PromptCode, in the prompt, as shown in Figure 1. We use PromptCode to write reasoning logic code, and put the complete definition of PromptCode and reasoning logic code into the prompt, guiding LLM to strictly follow the code logic in the prompt for inference. This transfers the self-denial and reflection process of conventional AI Agents from outside LLM to inside LLM, thereby improving LLM inference performance while reducing token cost.
+After investigating each prompt structure, we choose XML as the overall designing framework for prompts in INoT, using the XML structure to construct prompt. XML uses a hierarchical tree structure to organize data, dividing it into different levels and nodes through nested tags. This structure can clearly express the logical relation- ship between each part of prompt, providing LLM with an intuitive and easy-to-parse prompt framework, improving parsing efficiency of LLM, and reducing misunderstandings caused by non-standard or ambiguous prompt formats. At the same time, XML tags are self-
+descriptive, and tag names are usually defined based on the con- tent or meaning of the section, which makes the section itself has strong semantic expression ability. When LLM processes prompt, it can quickly understand the meaning of each prompt fragment with- out relying on additional contextual information, thus significantly improving the accuracy and efficiency of its semantic understanding. There are three modules in the INoT prompt, the PromptCode Def-
+inition Module, the Augment Module, and the Reasoning Module.
+Listing 1: PromptCode Definition (XML as the Language)
+<Role>
+RoleName :  Prompt Code  E x e c u t o r
+Role Desc : You need  t o  l e a r n  PromptCode ,
+a s t r u c t u r e d  r e a s o n i n g  code  d e f i n e d  below .
+Follow t h e  r u l e s  and  e x e c u t e  r e a s o n i n g  l o g i c
+code  s t r i c t l y  as  w r i t t e n  i n < Reasoning Logic > .
+</Role>
+<PromptCode>
+Prompt Code i s a s t r u c t u r e d  r e a s o n i n g code t h a t  e x p l i c i t l y  d e f i n e s  l o g i c a l  s t e p s
+t o s o l v e a g i v e n t a s k .  I t  i s a h y b r i d of Python programming and  n a t u r a l  l a n g u a g e .
+</PromptCode>
+<Rule>
+Purpose of each module d e s i g n e d below :
+<Image Augment >: Follow t h i s when a n a l y s e image , i f no image , i g n o r e t h i s .
+< Reasoning Logic >: The most i m p o r t a n t p a r t , must r e a s o n t a s k f o l l o w  t h i s  l i n e by l i n e !
+</Rule>
+
+PromptCode Definition Module
+PromptCode is a new program language defined in INoT prompt, specifically designed for LLM to read and understand. In order to
+
+better enable LLM to learn and understand, PromptCode is com- posed of a mixture of Python programming language and natural language. Unlike pseudocode, pseudocode is mainly designed for human understanding, while PromptCode is designed specifically to cater to semantic parsing ability and generation logic of LLM, in or- der to facilitate LLM reading and understanding.
+Python features a concise syntax and clear code structure, enabling the efficient expression of complex task logic. Its code inherently contains rich semantic information, such as variable names, func- tion names, and comments, which provides LLMs with additional contextual cues to better infer code intent. Meanwhile, natural lan- guage offers an intuitive and flexible means of conveying task back- ground, goals, and requirements, allowing LLMs to grasp the overall task intention more effectively. Due to the linguistic proximity be- tween Python and natural language, their integration is seamless and mutually reinforcing. While Python provides precise logical instruc- tions, natural language supplements them with rich semantic context, enhancing the model’s understanding of task details. In scenarios in- volving complex task descriptions or dynamic logic adjustments, nat- ural language can often replace lengthy code blocks, expressing the same logic in a single sentence. This significantly improves the con- ciseness and interpretability of reasoning prompts for LLMs.
+Integrating natural language into Python can further enhance the capabilities of LLMs. In prompt, natural language can describe some functions that are difficult to directly implement in Python in real- ity, which often have high abstraction, dynamism, or involve com- plex logical reasoning. Through the description of natural language, LLM can break through the limitations of traditional programming languages when understanding tasks, thereby generating more cre- ative and adaptive solutions. Python code usually requires clear logic and structure to implement specific functions, but may face diffi- culties in dealing with highly abstract concepts. For instance, non- functional requirements like “scalability” and “robustness,” or stylis- tic attributes of images, are challenging to encode directly in code. However, by expressing these concepts in natural language, LLMs can better grasp the core requirements and generate outputs aligned with them.
+In PromptCode Definition, Rule enables LLM to understand the entire prompt clearly and efficiently. Rule provides a brief introduc- tion to all modules in the prompt in advance, as shown in Listing 1, which can construct a clear reasoning framework and execution spec- ifications in prompt, guiding LLM to follow specific logical struc- tures for reasoning and decision-making in different task scenarios. It ensures that LLM can think systematically when dealing with com- plex tasks, avoid arbitrary speculation, and improve the accuracy, consistency, and controllability of reasoning.
+Listing 2: Image Augment
+
+<Image Augment>
+Follow  t h i s  module  t o  a n a l y z e  images .
+<Basic Visual Understanding>
+( What do you  s e e ? )
+I d e n t i f y  people ,  animals ,  key e l e m e n t s .
+Recognize c o l o r s , shapes ,  p a t t e r n s , axes , l e g e n d s and s p a t i a l  r e l a t i o n s h i p s .
+D e t e c t  t e x t  w i t h i n  images  ( i f  p r e s e n t )
+</Basic Visual Understanding>
+<Advanced Visual Analysis>
+( How does  i t  l o ok ? )
+Observe  l i g h t i n g ,  shadows ,  and  r e f l e c t i o n s .
+Analyze t e x t u r e s ,  m a t e r i a l s ,  and  s u r f a c e s .
+C o n s i d e r movement cu e s  ( i f  a p p l i c a b l e )
+</Advanced Visual Analysis>
+<Context Awareness>
+( What does  i t  mean ? )
+Use any accompanying  t e x t ,  metadata ,  or
+t a s k  i n s t r u c t i o n s  t o  r e f i n e  u n d e r s t a n d i n g .
+Compare t h e image wit h known p a t t e r n s or knowledge t o improve a c c u r a c y .
+Recognize s y m b o l i c or  c u l t u r a l  r e f e r e n c e s t h a t may i m p a c t i n t e r p r e t a t i o n .
+</Context Awareness>
+<Inference and Verification>
+( I s  t h e  a n a l y s i s  r e l i a b l e ? )
+Cross − check image d e t a i l s  wit h a v a i l a b l e t e x t u a l  d e s c r i p t i o n s .
+Avoid a s s u m p t i o n s i f something i s u n c l e a r , acknowledge u n c e r t a i n t y i n s t e a d of g u e s s i n g .
+M a i n t a i n  l o g i c a l  c o n s i s t e n c y :  e n s u r e  your
+v i s u a l  i n t e r p r e t a t i o n  a l i g n s  wit h  i n p u t  t a s k .
+</Inference and Verification>
+</Image Augment>
+
+Image Augment Module
+Image Augment module, as part of the INoT prompt, aims to guide MLLM to follow a systematic visual analysis framework when pro- cessing tasks that involve images to ensure precision, consistency, and logic of understanding, as shown in Listing 2. When the input task contains images, the Image Augment Module will play a role. This module uses clear instructions to enable MLLM to perform ba- sic visual perception when parsing images, identify key elements, colors, shapes, patterns, axes, legends, spatial relationships, and tex- tual information, thereby establishing a preliminary understanding of the image content. Subsequently, the prompt further requires LLM to conduct a more in-depth visual analysis, focusing on environ- mental factors such as lighting, shadows, and reflections, in order to infer time, material, and physical characteristics, and combine dy- namic features to infer possible time-series information. At the same time, this module clearly instructs LLM to combine contextual in- formation, including task descriptions, text annotations, and exist- ing knowledge, to improve recognition accuracy, understand possi- ble cultural or symbolic meanings, and avoid one-sided reasoning. In addition, this prompt module requires LLM to conduct strict logical verification during the reasoning process to ensure that the analysis results conform to the context and task objectives, avoid arbitrary guessing, and express appropriate uncertainty when the information is uncertain. Through this series of precise guidelines, the Image Augment module, as part of the INoT prompt, not only standardizes the way LLM processes images, but also enhances its depth of visual understanding, enabling it to provide more reliable and reasonable reasoning results in various task scenarios.
+
+Reasoning Module
+Reasoning Logic module in INoT prompt is designed to structure a multi-agent debate mechanism within the reasoning process of LLM, ensuring that responses are reflected and refined iteratively through critical evaluation and self-denial. The reasoning framework assumes the presence of two independent agents, Agent_A and Agent_B, who
+
+engage in a structured debate to iteratively refine their responses. The debate proceeds through several structured phases: initial reasoning, argument presentation, critique, rebuttal, and adjustment, ultimately leading to supervised validation and output of the final response.
+Listing 3: Reasoning Code
+<ReasoningLogic>
+if image in t a s k :  i m p o r t <Image Augment>
+# Assume a g e n t s wit h i n d e p e n d e n t r e a s o n i n g . Agent_A / B = DebateAgent(task)
+r e s u l t _ A , thought_A = Agent_A . r e a s o n ( ) r e s u l t _ B , thought_B = Agent_B . r e a s o n ( ) # S e t d e b a t e p a r a m e t e r s
+MaxRounds = 10 , Counter = 0 , agreement = F a l s e While n o t agreement or Counter < MaxRounds : Counter += 1
+At each s t e p , you must t h i n k l i k e Agent_A and t h e n l i k e Agent_B , r e s p o n d i n g as i f
+two i n t e l l i g e n t d e b a t e r s a r e r e f l e c t i n g . #Step 1:Agents present their arguments
+argument_A = Agent_A . r e a s o n ( ) argument_B = Agent_B . r e a s o n ( ) #Step 2: Critique each other’s reasoning (Debate Phase)
+c r i t i q u e _ A = Agent_A . c r i t i q u e ( argument_B ) # A c r i t i q u e s B’ s r e a s o n i n g
+c r i t i q u e _ B = Agent_B . c r i t i q u e ( argument_A ) # B c r i t i q u e s A’ s r e a s o n i n g
+#Step 3: Agents respond to critiques (Rebuttal Phase)
+r e b u t t a l _ A = Agent_A . r e b u t ( c r i t i q u e _ B ) # A r e b u t s B’ s c r i t i q u e
+r e b u t t a l _ B = Agent_B . r e b u t ( c r i t i q u e _ A ) # B r e b u t s A’ s c r i t i q u e
+#Step 4: Adjust based on rebuttals (Adjustment Phase)
+r e s u l t _ A , thought_A =Agent_A . a d j u s t ( r e b u t t a l _ B ) # A r e f i n e s based on B’ s r e b u t t a l
+r e s u l t _ B , thought_B =Agent_B . a d j u s t ( r e b u t t a l _ A ) # B r e f i n e s based on A’ s r e b u t t a l
+#Step 5: Agreement Check
+agreement = ( r e s u l t _ A == r e s u l t _ B )
+f i n a l _ r e s u l t = r e s u l t _ A  i f  agreement
+Output  f i n a l _ r e s u l t  w i t h o u t  e x p l a n a t i o n .
+</ReasoningLogic>
+The whole reasoning logic code is shown in Listing 3. The pro- cess begins by incorporating an Image Augment module to enhance interpretability before reasoning. Then, LLM begins to initialize Agent_A and Agent_B, both tasked with reasoning independently on the given problem. Each agent produces an initial result along with the corresponding thought process. The debate mechanism is regu- lated through a maximum number of rounds (MaxRounds = 10) to prevent infinite loops, while a Counter ensures structured iteration. The core of the process lies in the debate, where in each round, both agents present their arguments, engage in mutual critique, respond through rebuttals, and adjust their reasoning accordingly. This iter- ative debate-rebuttal-adjustment cycle enables both agents to refine their thoughts based on opposing viewpoints, thereby reducing rea- soning errors and inconsistencies. If both agents reach an agreement, their refined results converge and the result is finalized. Otherwise, the debate continues until either an agreement is reached or the iter-
+ation limit is met. The final response is then presented without ad- ditional explanations, reinforcing the structured reasoning approach and leading to more reliable output.
+
+Experiments
+Setup
+Datasets. We select three types of tasks to evaluate the performance of INoT, including QA, Code and Math domains. Six public benchmarks are used for these tasks for our experiments. According to established practices for addressing these three tasks, the data is divided into validation and test sets using a 1 : 4 ratio [34]. Specifically, in QA domain, HotpotQA [32] and SQuAD 1.1 [25] are selected, where we randomly select 1,000 samples each. In Code domain, we use the Python dataset for HumanEval [3] and full dataset for MBPP [2]. In terms of Math, we use the entire dataset for GSM8K [5] to refer to existing work [31], and for MATH [10], 600 random problems with difficulty levels of 4 and 5 are selected from three types of problems (Combinatorics & Probability, Pre-algebra, Pre-calculus). Furthermore, in multimedia inference versatility verification, three image QA datasets are selected as benchmarks to refer to existing work [11], which are ScienceQA-IMG [21], LLaVA-Bench (COCO) [14], and LLaVA-Bench (In-the-Wild) [14].
+
+Implementation Details. INoT utilizes different LLMs for tasks. LLMs including DeepSeek-V2.5 [6], DeepSeek-Chat in DeepSeek- V2 [6], Claude-3.5-sonnet [1], Gemma 2 [9], Qwen2.5-coder [23] and Llama3.2 [19] are employed as core LLMs. In addition, LLaVA [14], LLaMA-Adapter [35], and Multimodal Chain-of-Thought (MM-CoT) [36] are selected in multimedia inference versatility ver- ification. All models are accessed via APIs. We set the temperature at 1 for DeepSeek-V2.5 and 0 for the other models. We set iteration rounds to 10 in INoT prompt. The environment configuration for experiment is: Pytorch 2.1.2 + cuda 12.1 as frame, Intel ® Core ™ i9-14900KF as CPU and NVIDIA GeForce RTX 4090 as GPU.
+
+Baselines. In the experiments, we compare the results generated by INoT on the three types of tasks with other reasoning prompt engineering methods [28]. These methods include IO (direct LLM invocation), Chain-of-Thought (CoT) [31], Self-Consistency Chain- of-Thought (SCCOT) [30], Logical Cain-of-Thought (LogiCoT) [15], Tree-of-Thought (ToT) [20], guided iteration of thought (GIoT) and autonomous iteration of thought (AIoT) [24]. In these methods, LLMs are uniformly implemented using DeepSeek-V2.5 [6]. Addi- tionally, in order to verify the universality and effectiveness of INoT in image inference tasks, we compared the results of four methods on benchmarks. These methods are IO, CoT, INoT without Image Augment Module (w/o IAM), and complete INoT on benchmarks.
+
+Evaluation Metrics. For the QA tasks, we report the F1 Score as the metric. For the Code tasks, we report the pass@1 metric following established practices [27] to evaluate the accuracy of the generated code. For the Math tasks, we report the Solve Rate (%). All the final result is the average of five experiments. Moreover, we construct a pareto chart to analyze the cost of executing tasks on each test set by tracking token usage. This approach visually demonstrates the performance-cost trade-offs across different methods.
+
+Methods
+HumanEval
+MBPP
+MATH
+GSM8K
+HotpotQA
+SQuAD
+Avg.
+
+pass@1
+pass@1
+Solve Rate(%)
+Solve Rate(%)
+F1 Score
+F1 Score
+
+IO
+88.2
+72.2
+48.2
+90.0
+65.2
+84.2
+74.7
+CoT
+89.3
+72.2
+49.2
+89.2
+63.7
+85.3
+74.8
+SCCOT
+89.7
+73.3
+48.9
+90.8
+65.1
+86.7
+75.8
+LogiCoT
+89.7
+73.7
+48.7
+90.2
+64.3
+85.2
+75.3
+ToT
+90.6
+74.2
+50.2
+90.4
+66.5
+86.2
+76.4
+GIoT
+90.2
+72.2
+47.5
+90.4
+63.3
+85.1
+74.8
+AIoT
+90.4
+72.8
+47.2
+91.2
+64.3
+86.3
+75.4
+Ours
+95.9
+84.3
+53.4
+93.3
+72.2
+88.8
+81.3
+Table 1: Comparative analysis of performance of different methods and INoT on divided test set of Code, Math, QA tasks and average perfor- mance of each methods. The methods in this experiment uniformly use DeepSeek-V2.5. In the table, the best-performing results on the same dataset test set are highlighted in bold.
+59978497380
+
+Figure 2: Performance comparison with baselines. Experiments are conducted on six datasets representing Math, Code, and QA tasks. INoT outperforms baselines on each dataset.
+
+Results and Analysis
+
+Comparison to Baselines. Experimental results on six datasets in QA, Code, Math domains, as shown in Table 1, reflect the effectiveness and applicability of INoT compared to the baseline methods. INoT achieves an average performance of 81.3, surpassing all baseline methods by an average margin of 7.95%. This consistent improvement highlights INoT’s ability to enhance model reasoning and problem-solving across diverse domains. Specifically, INoT outperforms the best-performing baseline, ToT, by 6.41 percentage points in overall performance. INoT exhibits substantial gains in code generation tasks, achieving a pass@1 score of 95.9 on HumanEval and 84.3 on MBPP, significantly higher than the best baseline scores of 90.6 and 74.2, respectively. Similarly, in mathe- matical problem-solving, INoT attains a solve rate of 53.4 on MATH and 93.3 on GSM8K, surpassing the best baseline performance of
+50.2 and 91.2. For QA benchmarks, INoT achieves an F1 score of 75.2 on HotpotQA and 87.8 on SQuAD, representing notable improvements over the best baseline performances of 66.5 and 86.7, respectively. These results underscore INoT’s robustness and adaptability across different problem types, affirming its advantage in text task reasoning and structured problem-solving scenarios.
+
+Comparative Study Among Different LLMs. As shown in Table 2, the performance of INoT across different LLMs demonstrates its model-agnostic nature. We conduct experiments with INoT using different LLMs on benchmarks. On the same datasets, the performance variation of INoT across different models does not
+exceed 5%. The results indicate that INoT shows stable performance and is not significantly affected by the variations in LLMs.
+
+Cost Analysis. As the Figure 3 shown, we compare the performance and token cost between the baselines and INoT. The range of token cost ranges from a minimum of 6.1 to a maximum of 84.7, with sig- nificant differences. The token cost of INoT in all systems remains at a low level, usually around 26, far below the average level of other methods. Token cost of INoT is 58.3% lower on average than the best performing method in baselines. From the comprehensive comparison of token cost and performance score, the "Ours" method shows significant advantages. It not only has the lowest token cost, but also has the highest performance score, showing the best balance between resource efficiency and task effectiveness.
+
+Multimedia Versatility Analysis. Experimental results on three image QA benchmarks, as shown in Table 3, demonstrate that INoT has excellent performance compared to various base lines. Under different settings and benchmarks, the proposed method consistently outperforms the baselines, proving the effectiveness and versatility of INoT in image inference tasks. Compared with the base line methods (IO and CoT), the proposed method has an average accuracy improvement of about 2.7% on SQA-IMG; an average improvement of about 4.5% on LLaVA-Bench (COCO); and an average improvement of about 6.0% on LLaVA-Bench (In-the-Wild). These improvements indicate that the proposed method can effectively enhance the performance of the model in
+
+DeepSeek-V2.5
+95.9
+84.3
+53.4
+93.3
+72.2
+88.8
+DeepSeek-V2
+93.4
+82.4
+52.8
+90.2
+71.6
+87.4
+Claude-3.5-sonnet
+96.2
+84.5
+53.2
+93.8
+72.1
+86.7
+Gemma 2
+93.2
+82.5
+52.2
+90.3
+72.0
+84.8
+Qwen2.5-coder
+92.7
+81.7
+51.7
+91.2
+70.3
+84.2
+Llama3.2
+93.3
+79.4
+51.2
+90.4
+71.5
+84.3
+1428648-1004227Models
+ HumanEval	MBPP	MATH	GSM8K	HotpotQA	SQuAD 
+pass@1	pass@1	Solve Rate(%)	Solve Rate(%)	F1 Score	F1 Score
+Models
+ HumanEval	MBPP	MATH	GSM8K	HotpotQA	SQuAD 
+pass@1	pass@1	Solve Rate(%)	Solve Rate(%)	F1 Score	F1 Score
+Table 2: Comparative analysis of performance of INoT when utilizing different LLMs as the core LLM.
+89445288771
+
+3906189465871Methods
+Setting
+SQA-IMG
+LLaVAqa
+LLaVAw
+
+IO
+88.0
+85.1
+67.3
+LLaVA
+CoT
+ours(w/o IAM)
+88.2
+88.9
+80.2
+81.2
+68.2
+69.8
+
+ours
+90.2
+83.4
+72.4
+
+IO
+80.3
+76.7
+62.4
+LLaMA-
+CoT
+81.2
+77.2
+62.8
+Adaptor
+ours(w/o IAM) ours
+81.8
+83.9
+78.6
+80.2
+63.9
+70.1
+
+IO
+82.9
+77.6
+63.9
+MM-
+CoT
+83.2
+78.1
+64.2
+CoT
+ours(w/o IAM) ours
+83.8
+85.7
+79.2
+80.4
+64.7
+68.7
+
+Methods
+Setting
+SQA-IMG
+LLaVAqa
+LLaVAw
+
+IO
+88.0
+85.1
+67.3
+LLaVA
+CoT
+ours(w/o IAM)
+88.2
+88.9
+80.2
+81.2
+68.2
+69.8
+
+ours
+90.2
+83.4
+72.4
+
+IO
+80.3
+76.7
+62.4
+LLaMA-
+CoT
+81.2
+77.2
+62.8
+Adaptor
+ours(w/o IAM) ours
+81.8
+83.9
+78.6
+80.2
+63.9
+70.1
+
+IO
+82.9
+77.6
+63.9
+MM-
+CoT
+83.2
+78.1
+64.2
+CoT
+ours(w/o IAM) ours
+83.8
+85.7
+79.2
+80.4
+64.7
+68.7
+
+Figure 3: Analysis of token cost. Comparing the token cost and performance of baselines and INoT on the HumanEval dataset test set utilizing different LLMs. In this chart, CS represents SCCOT, LC represents LogiCoT, GI represents GIoT and AI represents AIoT. The line chart shows the performance, and the bar chart shows the token cost.
+394428957343
+
+image QA tasks, especially on the more challenging LLaVA-Bench (In-the-Wild) dataset, where the improvement is more significant. The LLaMA-Adaptor and MM-CoT models have also achieved significant improvements in their respective benchmark tests, further demonstrating the generalization and adaptability of the method. In addition, the results also verify the usefulness of the Image Augment Module in INoT prompt. INoT without Image Augment Module shows lower accuracy on all benchmarks of each model than the full INoT. For example, in LLaVA, the accuracy of INoT without Image Augment Module on SQA-IMG is 88.9%, the accuracy on LLaVA-Bench (COCO) is 81.2%, and the accuracy on LLaVA-Bench (In-the-Wild) is 69.8%, which is 1.3%, 2.2%, and
+
+Table 3: Accuracy (%) on three image QA benchmarks. SQA-IMG: ScienceQA-IMG (zero-shot); LLaVAqa: LLaVA-Bench (COCO); LLaVAw: LLaVA-Bench (In-the-Wild). INoT outperforms baselines on each benchmarks. Additionally, Image Augment Module in INoT prompt is verified to be useful.
+2.6% lower than INoT, respectively.
+
+Ablation Study. In order to verify whether the custom PromptCode in the code-integrated prompt really works, we conduct ablation ex- periments on benchmarks. As shown in Figure ??, these are the ex- perimental results after removing the custom code of PromptCode.
+
+On the same dataset, the performance of INoT has a certain degree of decline. Additionally, it can be seen that the impact of the exe- cution of the PromptCode logic is greater than that of the design of PromptCode and PromptComplier, indicating that running Prompt- Code to specify the reasoning logic plays a significant role in the optimal performance of LLMs.
+
+Conclusion and Future Work
+We propose a novel AI Agent Reasoning Framework with Intro- spection of Thought (INoT) by designing a new LLM-Read code in prompt. It constructs a virtual multi-agent debate reasoning frame- work within LLM. Therefore, self-denial and reflection occur within LLM instead of outside LLM. Benchmark experiments are con- ducted on Math, Code, and QA tasks. The performance of INoT ex- ceeds baselines, demonstrating its effectiveness in completing natu- ral language tasks. In addition, putting the iterative reflection and op- timization of the conventional agent reasoning framework into LLM effectively reduces the cost of completing natural language tasks. Furthermore, we demonstrate the versatility of INoT in image in- terpretation and inference through verification experiments on three image QA benchmarks. For future work, we would like to continue to optimize the code-integrated prompts, enhance the internal reasoning logic of LLM. Also, we will apply the INoT reasoning framework to more diverse tasks.
+
+References
+Anthropic. Claude-3.2-sonnet. 2024. URL https://www.anthropic.com/ news/claude-3-5-sonnet.
+J. Austin, A. Odena, M. Nye, M. Bosma, H. Michalewski, D. Dohan,
+E. Jiang, C. Cai, M. Terry, Q. Le, and C. Sutton. Program synthesis with large language models, 2021. URL https://arxiv.org/abs/2108.07732.
+M. Chen, J. Tworek, H. Jun, Q. Yuan, H. P. de Oliveira Pinto, J. Ka- plan, H. Edwards, Y. Burda, N. Joseph, G. Brockman, A. Ray, R. Puri,
+G. Krueger, M. Petrov, H. Khlaaf, G. Sastry, P. Mishkin, B. Chan,
+S. Gray, N. Ryder, M. Pavlov, A. Power, L. Kaiser, M. Bavarian,
+C. Winter, P. Tillet, F. P. Such, D. Cummings, M. Plappert, F. Chantzis,
+E. Barnes, A. Herbert-Voss, W. H. Guss, A. Nichol, A. Paino, N. Tezak,
+J. Tang, I. Babuschkin, S. Balaji, S. Jain, W. Saunders, C. Hesse,
+A. N. Carr, J. Leike, J. Achiam, V. Misra, E. Morikawa, A. Radford,
+M. Knight, M. Brundage, M. Murati, K. Mayer, P. Welinder, B. Mc- Grew, D. Amodei, S. McCandlish, I. Sutskever, and W. Zaremba. Eval- uating large language models trained on code, 2021.  URL https:
+//arxiv.org/abs/2107.03374.
+W. Chen, X. Ma, X. Wang, and W. W. Cohen. Program of thoughts prompting: Disentangling computation from reasoning for numerical reasoning tasks, 2023. URL https://arxiv.org/abs/2211.12588.
+K. Cobbe, V. Kosaraju, M. Bavarian, M. Chen, H. Jun, L. Kaiser,
+M. Plappert, J. Tworek, J. Hilton, R. Nakano, C. Hesse, and J. Schul- man. Training verifiers to solve math word problems, 2021. URL https://arxiv.org/abs/2110.14168.
+DeepSeek. DeepSeek-V2.5. 2024. URL https://huggingface.co/ deepseek-ai/DeepSeek-V2.5.
+N. Ding, Y. Qin, G. Yang, F. Wei, Z. Yang, Y. Su, S. Hu, Y. Chen, C.-M. Chan, W. Chen, et al. Parameter-efficient fine-tuning of large-scale pre- trained language models. Nature Machine Intelligence, 5(3):220–235, 2023.
+Y. Dong, X. Jiang, Z. Jin, and G. Li. Self-collaboration code generation via chatgpt. ACM Transactions on Software Engineering and Method- ology, 33(7):1–38, 2024.
+T. M. Gemma Team, C. Hardin, R. Dadashi, S. Bhupatiraju, L. Sifre,
+M. Rivière, M. S. Kale, J. Love, P. Tafti, L. Hussenot, and et al. Gemma. 2024. doi: 10.34740/KAGGLE/M/3301. URL https://www.kaggle. com/m/3301.
+D. Hendrycks, C. Burns, S. Kadavath, A. Arora, S. Basart, E. Tang,
+D. Song, and J. Steinhardt. Measuring mathematical problem solving with the math dataset, 2021. URL https://arxiv.org/abs/2103.03874.
+W. Hu, H. Liu, L. Chen, F. Zhou, C. Xiao, Q. Yang, and C. Zhang. Socratic questioning: Learn to self-guide multimodal reasoning in the wild, 2025. URL https://arxiv.org/abs/2501.02964.
+X. Huang, W. Liu, X. Chen, X. Wang, H. Wang, D. Lian, Y. Wang,
+R. Tang, and E. Chen. Understanding the planning of llm agents: A survey. arXiv preprint arXiv:2402.02716, 2024.
+E. Latif and X. Zhai. Fine-tuning chatgpt for automatic scoring. Com- puters and Education: Artificial Intelligence, 6:100210, 2024.
+H. Liu, C. Li, Q. Wu, and Y. J. Lee. Visual instruction tuning, 2023. URL https://arxiv.org/abs/2304.08485.
+H. Liu, Z. Teng, L. Cui, C. Zhang, Q. Zhou, and Y. Zhang. Logicot: Logical chain-of-thought instruction-tuning, 2023. URL https://arxiv. org/abs/2305.12147.
+P. Liu, W. Yuan, J. Fu, Z. Jiang, H. Hayashi, and G. Neubig. Pre-train, prompt, and predict: A systematic survey of prompting methods in nat- ural language processing. ACM Computing Surveys, 55(9):1–35, 2023.
+Z. Liu, W. Yao, J. Zhang, L. Yang, Z. Liu, J. Tan, P. K. Choubey,
+T. Lan, J. Wu, H. Wang, et al. Agentlite: A lightweight library for building and advancing task-oriented llm agent system. arXiv preprint arXiv:2402.15538, 2024.
+Z. Liu, Y. Zhang, P. Li, Y. Liu, and D. Yang. A dynamic llm-powered agent network for task-oriented agent collaboration, 2024. URL https:
+//arxiv.org/abs/2310.02170.
+Llama. Llama3.2. 2024. URL https://ollama.com/library/llama3.2.
+J. Long. Large language model guided tree-of-thought, 2023. URL https://arxiv.org/abs/2305.08291.
+P. Lu, S. Mishra, T. Xia, L. Qiu, K.-W. Chang, S.-C. Zhu, O. Tafjord,
+P. Clark, and A. Kalyan. Learn to explain: Multimodal reasoning via thought chains for science question answering. Advances in Neural Information Processing Systems, 35:2507–2521, 2022.
+G. Marvin, N. Hellen, D. Jjingo, and J. Nakatumba-Nabende. Prompt engineering in large language models. In International conference on data intelligence and cognitive informatics, pages 387–402. Springer, 2023.
+Qwen. Qwen2.5-coder. 2024. URL https://ollama.com/library/qwen2.
+5-coder.
+S. K. Radha, Y. N. Jelyani, A. Ghukasyan, and O. Goktas. Iteration of thought: Leveraging inner dialogue for autonomous large language model reasoning, 2024. URL https://arxiv.org/abs/2409.12618.
+P. Rajpurkar, J. Zhang, K. Lopyrev, and P. Liang. SQuAD: 100,000+ questions for machine comprehension of text. In J. Su, K. Duh, and
+X. Carreras, editors, Proceedings of the 2016 Conference on Empirical Methods in Natural Language Processing, pages 2383–2392, Austin, Texas, Nov. 2016. Association for Computational Linguistics. doi: 10. 18653/v1/D16-1264. URL https://aclanthology.org/D16-1264.
+K. I. Roumeliotis and N. D. Tselikas. Chatgpt and open-ai models: A preliminary review. Future Internet, 15(6):192, 2023.
+J. Saad-Falcon, A. G. Lafuente, S. Natarajan, N. Maru, H. Todorov,
+E. Guha, E. K. Buchanan, M. Chen, N. Guha, C. Ré, et al. Archon: An architecture search framework for inference-time techniques. arXiv preprint arXiv:2409.15254, 2024.
+P. Sahoo, A. K. Singh, S. Saha, V. Jain, S. Mondal, and A. Chadha. A systematic survey of prompt engineering in large language mod- els: Techniques and applications, 2024. URL https://arxiv.org/abs/2402. 07927.
+X. Song, Y. Wu, W. Wang, J. Liu, W. Su, and B. Zheng. Progco: Program helps self-correction of large language models, 2025. URL https://arxiv.org/abs/2501.01264.
+P. Wang, Z. Wang, Z. Li, Y. Gao, B. Yin, and X. Ren. Scott: Self- consistent chain-of-thought distillation, 2023. URL https://arxiv.org/ abs/2305.01879.
+J. Wei, X. Wang, D. Schuurmans, M. Bosma, b. ichter, F. Xia, E. Chi,
+Q. V. Le, and D. Zhou. Chain-of-thought prompting elicits reasoning in large language models. In S. Koyejo, S. Mohamed, A. Agarwal, D. Bel- grave, K. Cho, and A. Oh, editors, Advances in Neural Information Pro- cessing Systems, volume 35, pages 24824–24837. Curran Associates, Inc., 2022. URL https://proceedings.neurips.cc/paper_files/paper/2022/ file/9d5609613524ecf4f15af0f7b31abca4-Paper-Conference.pdf.
+Z. Yang, P. Qi, S. Zhang, Y. Bengio, W. W. Cohen, R. Salakhutdinov, and C. D. Manning. Hotpotqa: A dataset for diverse, explainable multi- hop question answering, 2018. URL https://arxiv.org/abs/1809.09600.
+Y. Yao, J. Duan, K. Xu, Y. Cai, Z. Sun, and Y. Zhang. A survey on large language model (llm) security and privacy: The good, the bad, and the ugly. High-Confidence Computing, page 100211, 2024.
+J. Zhang, J. Xiang, Z. Yu, F. Teng, X. Chen, J. Chen, M. Zhuge,
+X. Cheng, S. Hong, J. Wang, B. Zheng, B. Liu, Y. Luo, and C. Wu. Aflow: Automating agentic workflow generation, 2024. URL https:
+//arxiv.org/abs/2410.10762.
+R. Zhang, J. Han, C. Liu, P. Gao, A. Zhou, X. Hu, S. Yan, P. Lu, H. Li, and Y. Qiao. Llama-adapter: Efficient fine-tuning of language models with zero-init attention. arXiv preprint arXiv:2303.16199, 2023.
+
+Z. Zhang, A. Zhang, M. Li, H. Zhao, G. Karypis, and A. Smola. Mul- timodal chain-of-thought reasoning in language models, 2024. URL https://arxiv.org/abs/2302.00923.
+Q. Zhou, R. Zhou, Z. Hu, P. Lu, S. Gao, and Y. Zhang. Image-of-thought prompting for visual reasoning refinement in multimodal large language models. arXiv preprint arXiv:2405.13872, 2024.
+W. Zhou, Y. E. Jiang, L. Li, J. Wu, T. Wang, S. Qiu, J. Zhang, J. Chen,
+R. Wu, S. Wang, et al. Agents: An open-source framework for au- tonomous language agents. arXiv preprint arXiv:2309.07870, 2023.
