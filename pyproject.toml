@@ -1,0 +1,11 @@
+[project]
+name = "metamode"
+version = "0.1.0"
+description = "Persistent wiki-memory layer for Claude Code — fork of coleam00/claude-memory-compiler"
+requires-python = ">=3.12"
+dependencies = [
+    "tzdata>=2024.1",
+]
+
+[tool.ruff]
+line-length = 100
