@@ -17,7 +17,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from config import AGENTS_FILE, CONCEPTS_DIR, CONNECTIONS_DIR, KNOWLEDGE_DIR, RAW_DIR, now_iso
+from config import AGENTS_FILE, CONCEPTS_DIR, CONNECTIONS_DIR, KNOWLEDGE_DIR, RAW_DIR, ROOT_DIR, now_iso
 from utils import (
     file_hash,
     list_wiki_articles,
@@ -131,8 +131,6 @@ Read the document above and extract knowledge into wiki articles following the s
         query,
     )
 
-    ROOT_DIR = Path(__file__).resolve().parent.parent
-
     try:
         async for message in query(
             prompt=prompt,
@@ -149,7 +147,8 @@ Read the document above and extract knowledge into wiki articles following the s
                     if isinstance(block, TextBlock):
                         pass  # LLM writes files directly
             elif isinstance(message, ResultMessage):
-                pass
+                if message.total_cost_usd:
+                    state["total_cost"] = state.get("total_cost", 0.0) + message.total_cost_usd
     except Exception as e:
         print(f"  Error: {e}")
         return
@@ -183,7 +182,7 @@ def main():
         if not target.is_absolute():
             target = RAW_DIR / target.name
         if not target.exists():
-            target = Path(__file__).resolve().parent.parent / args.file
+            target = ROOT_DIR / args.file
         if not target.exists():
             print(f"Error: {args.file} not found")
             sys.exit(1)

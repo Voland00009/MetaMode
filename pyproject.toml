@@ -2,6 +2,8 @@
 name = "metamode"
 version = "0.1.0"
 description = "Persistent wiki-memory layer for Claude Code — fork of coleam00/claude-memory-compiler"
+readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "claude-agent-sdk>=0.1.58",

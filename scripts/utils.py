@@ -18,7 +18,10 @@ from config import (
 
 def load_state() -> dict:
     if STATE_FILE.exists():
-        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        try:
+            return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            pass
     return {"ingested": {}, "query_count": 0, "last_lint": None, "total_cost": 0.0}
 
 

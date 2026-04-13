@@ -14,7 +14,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-from config import AGENTS_FILE, CONCEPTS_DIR, CONNECTIONS_DIR, DAILY_DIR, KNOWLEDGE_DIR, now_iso
+from config import AGENTS_FILE, CONCEPTS_DIR, CONNECTIONS_DIR, DAILY_DIR, KNOWLEDGE_DIR, ROOT_DIR, now_iso
 from utils import (
     file_hash,
     list_raw_files,
@@ -23,8 +23,6 @@ from utils import (
     read_wiki_index,
     save_state,
 )
-
-ROOT_DIR = Path(__file__).resolve().parent.parent
 
 
 async def compile_daily_log(log_path: Path, state: dict) -> None:

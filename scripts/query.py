@@ -10,12 +10,9 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
-from pathlib import Path
 
-from config import KNOWLEDGE_DIR, QA_DIR, now_iso
+from config import KNOWLEDGE_DIR, QA_DIR, ROOT_DIR, now_iso
 from utils import load_state, read_all_wiki_content, save_state
-
-ROOT_DIR = Path(__file__).resolve().parent.parent
 
 
 async def run_query(question: str, file_back: bool = False) -> str:

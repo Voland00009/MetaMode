@@ -27,6 +27,8 @@ scripts/compile.log
 # Obsidian
 .obsidian/
 knowledge/.obsidian/
+*.base
+*.canvas
 
 # OS
 .DS_Store

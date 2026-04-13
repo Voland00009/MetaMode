@@ -30,7 +30,7 @@ Both pipelines produce the same output: structured wiki articles in `knowledge/`
 
 **Result:** Claude starts knowing what the wiki contains and what happened recently, without scanning files.
 
-### Hook: SessionEnd (`hooks/session-end.py`)
+### Hook: SessionEnd (`hooks/session_end.py`)
 
 **When:** Claude Code session ends (user closes, `/exit`, terminal close).
 
@@ -45,7 +45,7 @@ Both pipelines produce the same output: structured wiki articles in `knowledge/`
 - Windows: uses `CREATE_NO_WINDOW` flag to avoid console flash
 - Max context: 15,000 chars, truncated at turn boundaries
 
-### Hook: PreCompact (`hooks/pre-compact.py`)
+### Hook: PreCompact (`hooks/pre_compact.py`)
 
 **When:** Claude Code is about to auto-compact (context window full).
 

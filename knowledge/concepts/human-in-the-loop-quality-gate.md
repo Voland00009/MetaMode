@@ -5,6 +5,7 @@ tags: [ai, agents, workflow, meta]
 category: "ai"
 sources:
   - "raw/metamode-vs-coleam00-audit.md"
+  - "daily/2026-04-12.md"
 created: 2026-04-12
 updated: 2026-04-12
 ---
@@ -35,7 +36,10 @@ This pattern was motivated by a concrete failure: the mem0 system (a previous ex
 
 The friction cost is measurable but acceptable. The user spends 1-2 minutes reviewing pending items at session start. This is cheaper than periodic bulk cleanups, and the resulting knowledge base stays high-quality without maintenance debt.
 
+**Update (2026-04-12):** In MetaMode v2, the manual pending review was replaced by a two-pass LLM quality audit. The friction of manual approval proved too high — the review step was buried in a long session start context and easy to miss. The replacement auto-saves all extracted knowledge (zero friction) and uses a second LLM pass to flag low-quality entries with `<!-- AUDIT_FLAG -->`. This preserves the quality gate principle while removing the human bottleneck. See [[concepts/two-pass-llm-quality-audit]] for the full pattern.
+
 ## Related Concepts
 
 - [[concepts/cc-hooks-lifecycle]] - Hooks trigger the auto-capture; pending review adds a gate before permanent storage
 - [[concepts/tdd-red-phase-value]] - Same principle: catch problems early (before storage) rather than fixing them later (cleanup)
+- [[concepts/two-pass-llm-quality-audit]] - The successor pattern that replaced manual pending review with automated LLM audit

@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from pathlib import Path
 
-from config import KNOWLEDGE_DIR, REPORTS_DIR, now_iso, today_iso
+from config import KNOWLEDGE_DIR, REPORTS_DIR, ROOT_DIR, now_iso, today_iso
 from utils import (
     count_inbound_links,
     extract_wikilinks,
@@ -24,9 +23,6 @@ from utils import (
     save_state,
     wiki_article_exists,
 )
-
-ROOT_DIR = Path(__file__).resolve().parent.parent
-
 
 def check_broken_links() -> list[dict]:
     issues = []
@@ -244,6 +240,7 @@ def generate_report(all_issues: list[dict]) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Lint the knowledge base")
     parser.add_argument("--structural-only", action="store_true", help="Skip LLM checks (faster)")
+    parser.add_argument("--include-memory", action="store_true", help="Also run memory lint checks")
     args = parser.parse_args()
 
     print("Running knowledge base lint checks...")
@@ -272,7 +269,17 @@ def main():
     else:
         print("  Skipping: Contradictions (--structural-only)")
 
+    memory_issues: list[dict] = []
+    if args.include_memory:
+        print("\nRunning memory lint checks...")
+        from memory_lint import run_memory_lint
+        memory_issues = run_memory_lint()
+
     report = generate_report(all_issues)
+    if memory_issues:
+        from memory_lint import generate_report as memory_report
+        report += "\n---\n\n" + memory_report(memory_issues)
+
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     report_path = REPORTS_DIR / f"lint-{today_iso()}.md"
     report_path.write_text(report, encoding="utf-8")
@@ -280,11 +287,14 @@ def main():
 
     state = load_state()
     state["last_lint"] = now_iso()
+    if args.include_memory:
+        state["last_memory_lint"] = now_iso()
     save_state(state)
 
-    errors = sum(1 for i in all_issues if i["severity"] == "error")
-    warnings = sum(1 for i in all_issues if i["severity"] == "warning")
-    suggestions = sum(1 for i in all_issues if i["severity"] == "suggestion")
+    combined = all_issues + memory_issues
+    errors = sum(1 for i in combined if i["severity"] == "error")
+    warnings = sum(1 for i in combined if i["severity"] == "warning")
+    suggestions = sum(1 for i in combined if i["severity"] == "suggestion")
     print(f"\nResults: {errors} errors, {warnings} warnings, {suggestions} suggestions")
 
     return 1 if errors > 0 else 0

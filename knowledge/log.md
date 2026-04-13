@@ -38,3 +38,13 @@
 - Source: raw/metamode-vs-coleam00-audit.md
 - Articles created: [[concepts/human-in-the-loop-quality-gate]], [[concepts/fork-dont-rewrite]], [[concepts/per-project-vs-global-tool-config]], [[concepts/multi-source-knowledge-ingestion]], [[connections/quality-vs-automation-tradeoff]]
 - Articles updated: none
+
+## [2026-04-12T19:29:10-07:00] compile | 2026-04-12.md
+- Source: daily/2026-04-12.md
+- Articles created: [[concepts/windows-cli-arg-length-limit]], [[concepts/two-pass-llm-quality-audit]], [[concepts/claudemd-per-turn-token-cost]], [[concepts/claudeignore-context-optimization]], [[concepts/stale-memory-worse-than-absence]], [[connections/claudeignore-and-claudemd-sizing]]
+- Articles updated: [[concepts/human-in-the-loop-quality-gate]] (added v2 update: pending review replaced by two-pass audit)
+
+## [2026-04-12T19:52:24-07:00] compile | 2026-04-12.md
+- Source: daily/2026-04-12.md (full day — SDK migration, memory audit S1-S4, v2 implementation, memory lint)
+- Articles created: [[concepts/claude-agent-sdk-max-subscription]], [[concepts/memory-tiering-access-frequency]], [[concepts/opt-in-lint-reminders]], [[concepts/uv-run-directory-global-hooks]], [[concepts/llm-cost-tracking-pattern]], [[connections/stale-memory-and-periodic-lint]]
+- Articles updated: none
