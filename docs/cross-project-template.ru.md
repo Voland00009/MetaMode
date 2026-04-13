@@ -1,13 +1,13 @@
-🌐 **English** | [Русский](cross-project-template.ru.md)
+🌐 [English](cross-project-template.md) | **Русский**
 
-# Cross-Project Wiki Access — Template for CLAUDE.md
+# Доступ к Wiki из других проектов — шаблон для CLAUDE.md
 
-Copy the block below into the `CLAUDE.md` of any project where you want Claude Code
-to have access to your personal wiki knowledge base.
+Скопируйте блок ниже в `CLAUDE.md` любого проекта, где вы хотите, чтобы Claude Code
+имел доступ к вашей персональной wiki базе знаний.
 
 ---
 
-## Block to copy (between the markers)
+## Блок для копирования (между маркерами)
 
 ```markdown
 <!-- START: MetaMode Wiki Access -->
@@ -48,10 +48,10 @@ File name: `raw/<topic-slug>.md` (e.g., `raw/react-useeffect-cleanup.md`)
 
 ---
 
-## Notes
+## Примечания
 
-- Replace `<METAMODE_PATH>` with your actual MetaMode clone path (e.g., `~/Dev/MetaMode` or `C:/Users/you/Dev/MetaMode`)
-- Paths use forward slashes — Claude Code on Windows handles both `/` and `\`
-- The block is self-contained: copy-paste into any CLAUDE.md, no other setup needed
-- Wiki is read-only from other projects; new knowledge goes through RAW inbox
-- The wiki index is small (<50 lines now), so reading it is cheap
+- Замените `<METAMODE_PATH>` на ваш реальный путь к клону MetaMode (например, `~/Dev/MetaMode` или `C:/Users/you/Dev/MetaMode`)
+- Пути используют прямые слеши — Claude Code на Windows работает и с `/`, и с `\`
+- Блок самодостаточен: скопируйте в любой CLAUDE.md, другая настройка не нужна
+- Wiki доступна только для чтения из других проектов; новые знания проходят через RAW inbox
+- Индекс wiki маленький (<50 строк сейчас), поэтому его чтение дёшево

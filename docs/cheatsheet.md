@@ -1,3 +1,5 @@
+🌐 **English** | [Русский](cheatsheet.ru.md)
+
 # MetaMode Cheatsheet
 
 ## Automatic (runs by itself)

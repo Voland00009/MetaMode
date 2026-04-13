@@ -1,3 +1,5 @@
+🌐 **English** | [Русский](commands.ru.md)
+
 # Command Reference
 
 Everything MetaMode can do — automatic hooks, CLI scripts, and in-chat commands.

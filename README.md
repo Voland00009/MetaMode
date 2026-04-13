@@ -1,3 +1,5 @@
+🌐 **English** | [Русский](README.ru.md)
+
 # MetaMode
 
 **Persistent wiki-memory for Claude Code.** Sessions captured automatically, compiled into structured wiki articles, injected at session start. Claude remembers.
@@ -139,9 +141,15 @@ MetaMode/
 - **[Cheatsheet](docs/cheatsheet.md)** — quick reference card
 - **[Cross-Project Template](docs/cross-project-template.md)** — give other projects read access to your wiki
 
+> 📖 **Документация на русском:** [README](README.ru.md) ・ [Установка](docs/setup.ru.md) ・ [Команды](docs/commands.ru.md) ・ [Как это работает](docs/how-it-works.ru.md) ・ [Шпаргалка](docs/cheatsheet.ru.md)
+
 ## Contributing
 
 Contributions welcome! This is a personal tool that grew useful enough to share. If you find bugs, have ideas, or want to improve the docs — open an issue or PR.
+
+## Acknowledgments
+
+MetaMode is a fork of [coleam00/claude-memory-compiler](https://github.com/coleam00/claude-memory-compiler) by Cole Medin, adapted from [Andrej Karpathy's LLM Knowledge Base](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) architecture. Thank you both for the foundational work.
 
 ## License
 

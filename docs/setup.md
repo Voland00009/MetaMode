@@ -1,3 +1,5 @@
+🌐 **English** | [Русский](setup.ru.md)
+
 # Setup Guide
 
 Step-by-step installation for macOS, Linux, and Windows.

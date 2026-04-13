@@ -1,3 +1,5 @@
+🌐 **English** | [Русский](how-it-works.ru.md)
+
 # How It Works
 
 Deep dive into MetaMode's pipeline, architecture, and design decisions.
