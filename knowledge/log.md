@@ -48,3 +48,23 @@
 - Source: daily/2026-04-12.md (full day — SDK migration, memory audit S1-S4, v2 implementation, memory lint)
 - Articles created: [[concepts/claude-agent-sdk-max-subscription]], [[concepts/memory-tiering-access-frequency]], [[concepts/opt-in-lint-reminders]], [[concepts/uv-run-directory-global-hooks]], [[concepts/llm-cost-tracking-pattern]], [[connections/stale-memory-and-periodic-lint]]
 - Articles updated: none
+
+## [2026-04-13T12:48:44-07:00] ingest | example-article.md
+- Source: raw/example-article.md
+- Articles created: [[concepts/asyncio-forgotten-await]], [[concepts/asyncio-blocking-event-loop]], [[concepts/asyncio-fire-and-forget-tasks]], [[connections/asyncio-pitfalls-and-silent-failures]]
+- Articles updated: [[concepts/python-duck-typing-silent-failures]] (added asyncio cross-references)
+
+## [2026-04-13T12:51:07-07:00] ingest | gh-cli-windows-bash-workaround.md
+- Source: raw/gh-cli-windows-bash-workaround.md
+- Articles created: [[concepts/gh-cli-bash-path-windows]], [[concepts/file-based-input-shell-escaping]], [[connections/windows-shell-boundary-failures]]
+- Articles updated: [[concepts/windows-cli-arg-length-limit]] (added cross-references to new shell boundary articles)
+
+## [2026-04-13T12:53:04-07:00] ingest | gh-path-bashrc-fix.md
+- Source: raw/gh-path-bashrc-fix.md
+- Articles created: none (content fully covered by existing articles)
+- Articles updated: [[concepts/gh-cli-bash-path-windows]] (added: Claude Code sources .bashrc at startup, directory-only PATH tip, generalization to other Program Files programs)
+
+## [2026-04-13T12:54:10-07:00] ingest | git-unrelated-histories-branch-strategy.md
+- Source: raw/git-unrelated-histories-branch-strategy.md
+- Articles created: [[concepts/git-unrelated-histories]], [[concepts/github-repo-init-existing-project]], [[connections/git-unrelated-histories-and-tooling-boundaries]]
+- Articles updated: none

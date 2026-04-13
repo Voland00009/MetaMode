@@ -5,8 +5,9 @@ tags: [python, devtools, shell, debugging]
 category: "devtools"
 sources:
   - "daily/2026-04-12.md"
+  - "raw/gh-cli-windows-bash-workaround.md"
 created: 2026-04-12
-updated: 2026-04-12
+updated: 2026-04-13
 ---
 
 # Windows CLI Argument Length Limit for LLM Tools
@@ -37,3 +38,6 @@ The stdin approach is universally safer: it has no practical length limit, works
 
 - [[concepts/claude-cli-json-output-variance]] - Another CLI integration gotcha: polymorphic output types
 - [[concepts/python-duck-typing-silent-failures]] - Same failure pattern: silent corruption instead of a clear error
+- [[concepts/file-based-input-shell-escaping]] - Generalized pattern: file/stdin input bypasses both length limits and escaping issues
+- [[concepts/gh-cli-bash-path-windows]] - Another Windows shell boundary failure: PATH mismatch between bash and Windows
+- [[connections/windows-shell-boundary-failures]] - This concept is part of a family of Windows shell boundary bugs

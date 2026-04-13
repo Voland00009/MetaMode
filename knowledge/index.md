@@ -30,3 +30,13 @@
 | [[concepts/uv-run-directory-global-hooks]] | `uv run --directory` enables global hooks to execute project-specific scripts from any cwd | daily/2026-04-12.md | 2026-04-12 |
 | [[concepts/llm-cost-tracking-pattern]] | Accumulate `ResultMessage.total_cost_usd` across SDK calls into shared state.json | daily/2026-04-12.md | 2026-04-12 |
 | [[connections/stale-memory-and-periodic-lint]] | Audit detects staleness patterns → lint codifies checks → reminders ensure cadence | daily/2026-04-12.md | 2026-04-12 |
+| [[concepts/asyncio-forgotten-await]] | Missing `await` returns coroutine object silently — wrong type flows through code | raw/example-article.md | 2026-04-13 |
+| [[concepts/asyncio-blocking-event-loop]] | Sync blocking calls (`time.sleep`, `requests`) inside async freeze all concurrent tasks | raw/example-article.md | 2026-04-13 |
+| [[concepts/asyncio-fire-and-forget-tasks]] | `create_task()` without stored reference lets GC destroy the task silently | raw/example-article.md | 2026-04-13 |
+| [[connections/asyncio-pitfalls-and-silent-failures]] | Asyncio pitfalls are async manifestations of Python's silent failure pattern | raw/example-article.md | 2026-04-13 |
+| [[concepts/gh-cli-bash-path-windows]] | `gh.exe` not in bash PATH on Windows; fix via `~/.bashrc` PATH export, generalizes to any Program Files tool | raw/gh-cli-windows-bash-workaround.md, raw/gh-path-bashrc-fix.md | 2026-04-13 |
+| [[concepts/file-based-input-shell-escaping]] | Use `--body-file` / stdin to bypass cross-shell escaping issues on Windows | raw/gh-cli-windows-bash-workaround.md | 2026-04-13 |
+| [[connections/windows-shell-boundary-failures]] | PATH, arg length, escaping, stdout swallowing — a family of silent Windows shell bugs | raw/gh-cli-windows-bash-workaround.md | 2026-04-13 |
+| [[concepts/git-unrelated-histories]] | `--allow-unrelated-histories` merges branches with no common ancestor; caused by separate repo initialization | raw/git-unrelated-histories-branch-strategy.md | 2026-04-13 |
+| [[concepts/github-repo-init-existing-project]] | Always create empty GitHub repo for existing projects; init with README creates unrelated histories | raw/git-unrelated-histories-branch-strategy.md | 2026-04-13 |
+| [[connections/git-unrelated-histories-and-tooling-boundaries]] | Unrelated histories is a boundary mismatch bug in the same family as PATH/escaping/arg-length issues | raw/git-unrelated-histories-branch-strategy.md | 2026-04-13 |

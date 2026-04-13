@@ -37,3 +37,5 @@ The root cause is that Python's duck typing makes strings and lists interchangea
 
 - [[concepts/python-import-time-binding]] - Same class of Python permissiveness bug: wrong data passes silently
 - [[concepts/claude-cli-json-output-variance]] - The specific external data source that triggered this bug
+- [[concepts/asyncio-forgotten-await]] - Async variant: forgotten `await` lets a coroutine object flow silently as wrong type
+- [[connections/asyncio-pitfalls-and-silent-failures]] - Asyncio pitfalls as async manifestations of this same silent failure class
