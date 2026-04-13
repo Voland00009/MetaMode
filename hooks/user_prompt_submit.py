@@ -11,8 +11,11 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from shared import now_local  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DAILY_DIR = ROOT / "daily"
@@ -34,7 +37,7 @@ def parse_save_command(prompt: str) -> str | None:
 
 def write_quick_save(text: str) -> Path:
     """Append quick-save text to today's daily log. Returns the log path."""
-    today = datetime.now(timezone.utc).astimezone()
+    today = now_local()
     log_path = DAILY_DIR / f"{today.strftime('%Y-%m-%d')}.md"
 
     if not log_path.exists():

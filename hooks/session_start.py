@@ -5,8 +5,11 @@ Outputs JSON to stdout with additionalContext for Claude to see.
 
 import json
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from shared import now_local  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 KNOWLEDGE_DIR = ROOT / "knowledge"
@@ -27,7 +30,7 @@ COMPILE_REMINDER_DAYS_THRESHOLD = 3
 
 def get_recent_log() -> str:
     """Get last N lines from today's or yesterday's daily log."""
-    today = datetime.now(timezone.utc).astimezone()
+    today = now_local()
     for offset in range(2):
         date = today - timedelta(days=offset)
         log_path = DAILY_DIR / f"{date.strftime('%Y-%m-%d')}.md"
@@ -62,7 +65,7 @@ def get_compile_reminder() -> str:
     oldest = uncompiled[0]
     try:
         oldest_date = datetime.strptime(oldest.replace(".md", ""), "%Y-%m-%d")
-        days_old = (datetime.now() - oldest_date).days
+        days_old = (now_local() - oldest_date.replace(tzinfo=now_local().tzinfo)).days
     except ValueError:
         days_old = 0
 
@@ -91,12 +94,63 @@ def get_raw_reminder() -> str:
     )
 
 
+def get_lint_reminder() -> str:
+    """Check if wiki lint (>7d) or memory lint (>14d) are overdue."""
+    if not STATE_FILE.exists():
+        return ""
+    try:
+        state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return ""
+
+    warnings = []
+    now = now_local()
+
+    # Wiki lint: 7-day threshold
+    try:
+        last_lint = state.get("last_lint")
+        if not last_lint:
+            warnings.append(
+                "Wiki lint ещё ни разу не запускался. "
+                "Скажи 'запусти lint' чтобы проверить базу знаний."
+            )
+        else:
+            days = (now - datetime.fromisoformat(last_lint)).days
+            if days >= 7:
+                warnings.append(
+                    f"Wiki lint не запускался {days} дней. "
+                    f"Скажи 'запусти lint' чтобы проверить базу знаний."
+                )
+    except ValueError:
+        pass
+
+    # Memory lint: 14-day threshold
+    try:
+        last_memory_lint = state.get("last_memory_lint")
+        if not last_memory_lint:
+            warnings.append(
+                "Memory lint не запускался ни разу. "
+                "Скажи 'проверь память' если хочешь."
+            )
+        else:
+            days = (now - datetime.fromisoformat(last_memory_lint)).days
+            if days >= 14:
+                warnings.append(
+                    f"Memory lint не запускался {days} дней. "
+                    f"Скажи 'проверь память' если хочешь."
+                )
+    except ValueError:
+        pass
+
+    return "\n".join(warnings)
+
+
 def build_context() -> str:
     """Build the full context string to inject at session start."""
     parts = []
 
-    today = datetime.now(timezone.utc).astimezone()
-    parts.append(f"## Today\n{today.strftime('%A, %B %d, %Y')}")
+    today = now_local()
+    parts.append(f"## Today\n{today.strftime('%A, %B %d, %Y')}\n")
 
     if INDEX_FILE.exists():
         index_content = INDEX_FILE.read_text(encoding="utf-8")
@@ -114,6 +168,16 @@ def build_context() -> str:
     raw_reminder = get_raw_reminder()
     if raw_reminder:
         parts.append(f"## RAW Inbox\n\n{raw_reminder}")
+
+    lint_reminder = get_lint_reminder()
+    if lint_reminder:
+        marked = "\n".join(f"⚠️ {line}" for line in lint_reminder.splitlines())
+        parts.append(
+            f"## Lint Reminder\n\n"
+            f"IMPORTANT: Сообщи пользователю об этом В НАЧАЛЕ ответа, "
+            f"до выполнения его запроса.\n\n"
+            f"{marked}"
+        )
 
     context = "\n\n---\n\n".join(parts)
 

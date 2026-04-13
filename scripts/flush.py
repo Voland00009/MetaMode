@@ -1,6 +1,6 @@
 """Memory flush — extracts knowledge from conversation context via Claude Agent SDK.
 
-Spawned by session-end.py or pre-compact.py as a background process.
+Spawned by session_end.py or pre_compact.py as a background process.
 
 Usage:
     uv run python flush.py <context_file.md> <session_id>
@@ -14,12 +14,16 @@ os.environ["CLAUDE_INVOKED_BY"] = "memory_flush"
 import asyncio
 import json
 import logging
+import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+from config import now_local  # noqa: E402
+
 DAILY_DIR = ROOT / "daily"
 SCRIPTS_DIR = ROOT / "scripts"
 STATE_FILE = SCRIPTS_DIR / "last-flush.json"
@@ -47,7 +51,7 @@ def save_flush_state(state: dict) -> None:
 
 
 def append_to_daily_log(content: str, section: str = "Session") -> None:
-    today = datetime.now(timezone.utc).astimezone()
+    today = now_local()
     log_path = DAILY_DIR / f"{today.strftime('%Y-%m-%d')}.md"
 
     if not log_path.exists():
@@ -124,6 +128,19 @@ respond with exactly: FLUSH_OK
             elif isinstance(message, ResultMessage):
                 if message.total_cost_usd:
                     _accumulate_cost(message.total_cost_usd)
+    except subprocess.SubprocessError as e:
+        # Catches CalledProcessError (with returncode/stderr) and similar
+        import traceback
+        stderr_text = getattr(e, "stderr", None) or ""
+        exit_code = getattr(e, "returncode", None)
+        logging.error(
+            "Agent SDK subprocess error (exit=%s): %s\nstderr: %s\n%s",
+            exit_code, e, stderr_text, traceback.format_exc(),
+        )
+        response = f"FLUSH_ERROR: {type(e).__name__} (exit={exit_code}): {e}"
+        if stderr_text:
+            for line in str(stderr_text).splitlines():
+                logging.error("  SDK stderr: %s", line)
     except Exception as e:
         import traceback
         logging.error("Agent SDK error: %s\n%s", e, traceback.format_exc())
@@ -217,7 +234,7 @@ def maybe_trigger_compilation() -> None:
     """If past compile hour and today's log changed, spawn compile.py."""
     import subprocess as _sp
 
-    now = datetime.now(timezone.utc).astimezone()
+    now = now_local()
     if now.hour < COMPILE_AFTER_HOUR:
         return
 
@@ -253,9 +270,13 @@ def maybe_trigger_compilation() -> None:
 
     try:
         log_handle = open(str(SCRIPTS_DIR / "compile.log"), "a")
-        _sp.Popen(cmd, stdout=log_handle, stderr=_sp.STDOUT, cwd=str(ROOT), **kwargs)
-    except Exception as e:
-        logging.error("Failed to spawn compile.py: %s", e)
+        try:
+            _sp.Popen(cmd, stdout=log_handle, stderr=_sp.STDOUT, cwd=str(ROOT), **kwargs)
+        except Exception as e:
+            log_handle.close()
+            logging.error("Failed to spawn compile.py: %s", e)
+    except OSError as e:
+        logging.error("Failed to open compile.log: %s", e)
 
 
 def main():

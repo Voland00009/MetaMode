@@ -1,7 +1,9 @@
 """Path constants and configuration for MetaMode knowledge base."""
 
-from pathlib import Path
+import os
 from datetime import datetime, timezone
+from pathlib import Path
+from zoneinfo import ZoneInfo
 
 # -- Paths --
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +22,23 @@ INDEX_FILE = KNOWLEDGE_DIR / "index.md"
 LOG_FILE = KNOWLEDGE_DIR / "log.md"
 STATE_FILE = SCRIPTS_DIR / "state.json"
 
+# -- Timezone --
+# Override with METAMODE_TIMEZONE env var (e.g. "Europe/Moscow", "US/Pacific").
+# Falls back to system local timezone if not set.
+_tz_name = os.environ.get("METAMODE_TIMEZONE")
+LOCAL_TZ: timezone | ZoneInfo = ZoneInfo(_tz_name) if _tz_name else datetime.now(timezone.utc).astimezone().tzinfo  # type: ignore[assignment]
+
+
+def now_local() -> datetime:
+    """Current datetime in the configured timezone."""
+    return datetime.now(timezone.utc).astimezone(LOCAL_TZ)
+
 
 def now_iso() -> str:
-    """Current time in ISO 8601 format, local timezone."""
-    return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
+    """Current time in ISO 8601 format, configured timezone."""
+    return now_local().isoformat(timespec="seconds")
 
 
 def today_iso() -> str:
-    """Current date as YYYY-MM-DD."""
-    return datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d")
+    """Current date as YYYY-MM-DD in configured timezone."""
+    return now_local().strftime("%Y-%m-%d")
