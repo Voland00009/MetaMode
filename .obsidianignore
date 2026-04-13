@@ -1,0 +1,17 @@
+# Git files — Sync should not touch these
+.git
+.gitignore
+.claudeignore
+
+# Python runtime — no need to sync
+.venv/
+__pycache__/
+*.pyc
+
+# Build/runtime artifacts
+scripts/state.json
+scripts/last-flush.json
+scripts/flush.log
+scripts/session-flush-*.md
+scripts/flush-context-*.md
+reports/
