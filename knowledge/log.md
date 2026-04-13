@@ -68,3 +68,8 @@
 - Source: raw/git-unrelated-histories-branch-strategy.md
 - Articles created: [[concepts/git-unrelated-histories]], [[concepts/github-repo-init-existing-project]], [[connections/git-unrelated-histories-and-tooling-boundaries]]
 - Articles updated: none
+
+## [2026-04-13T13:35:15-07:00] ingest | python-path-tmp-windows-mismatch.md
+- Source: raw/python-path-tmp-windows-mismatch.md
+- Articles created: [[concepts/python-path-tmp-windows-mismatch]], [[concepts/python-stdout-buffering-file-redirect]]
+- Articles updated: [[connections/windows-shell-boundary-failures]] (added /tmp path mismatch as 5th boundary type)

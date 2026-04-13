@@ -40,3 +40,5 @@
 | [[concepts/git-unrelated-histories]] | `--allow-unrelated-histories` merges branches with no common ancestor; caused by separate repo initialization | raw/git-unrelated-histories-branch-strategy.md | 2026-04-13 |
 | [[concepts/github-repo-init-existing-project]] | Always create empty GitHub repo for existing projects; init with README creates unrelated histories | raw/git-unrelated-histories-branch-strategy.md | 2026-04-13 |
 | [[connections/git-unrelated-histories-and-tooling-boundaries]] | Unrelated histories is a boundary mismatch bug in the same family as PATH/escaping/arg-length issues | raw/git-unrelated-histories-branch-strategy.md | 2026-04-13 |
+| [[concepts/python-path-tmp-windows-mismatch]] | Python `Path("/tmp")` → `C:\tmp` but bash `/tmp` → MSYS2 temp; cross-process signal files silently break | raw/python-path-tmp-windows-mismatch.md | 2026-04-13 |
+| [[concepts/python-stdout-buffering-file-redirect]] | `print()` buffers when stdout redirected to file; add `flush=True` or log appears empty until exit | raw/python-path-tmp-windows-mismatch.md | 2026-04-13 |

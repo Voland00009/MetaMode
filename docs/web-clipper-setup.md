@@ -1,6 +1,26 @@
 # Obsidian Web Clipper Setup
 
-Setup guide for saving web pages into MetaMode RAW inbox via Obsidian Web Clipper.
+Save web pages directly into Claude's memory. Web Clipper turns any article, documentation page, or research into a markdown file in MetaMode's RAW inbox — one `ingest_raw.py` run later, Claude knows what you read.
+
+## Why This Matters
+
+Claude Code forgets everything between sessions. MetaMode fixes that for *conversations*, but what about knowledge you find *outside* Claude — blog posts, framework docs, Stack Overflow answers? Web Clipper closes that gap:
+
+```text
+Web page → Clip → raw/article.md → ingest_raw.py → knowledge/concepts/*.md → session_start → Claude knows
+```
+
+Without Web Clipper, you'd have to copy-paste content into Claude's context window every time. With it, you clip once and Claude remembers forever.
+
+## Use Cases
+
+**Learning a new framework** — clip the key docs pages (getting started, API reference, common patterns). After ingestion, Claude can reference them when writing code — no more "paste the docs" in every session.
+
+**Saving a debugging solution** — found a GitHub issue or blog post that solved your bug? Clip it. Next time the same problem appears, Claude already knows the fix.
+
+**Research synthesis** — clip 5-10 articles on a topic, run ingest, then ask Claude to synthesize patterns across all of them. The wiki compiler groups related concepts automatically.
+
+**Preserving ephemeral content** — Discord messages, Slack threads, forum posts that might get deleted. Clip now, process later.
 
 ## Prerequisites
 
@@ -81,3 +101,9 @@ This will:
 **Images not downloading**: Make sure "Local Images Plus" is enabled and configured with the correct media folder path.
 
 **ingest_raw.py fails**: Check that `raw/` contains valid markdown files. Binary files or non-markdown content will cause errors.
+
+## See Also
+
+- [Ecosystem overview](ecosystem.md) — how Web Clipper fits into the full MetaMode pipeline
+- [Obsidian setup](obsidian-setup.md) — browsing your wiki with graph view and search
+- [RAW Inbox](raw-inbox.md) — other ways to add external documents

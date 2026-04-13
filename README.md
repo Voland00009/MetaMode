@@ -133,9 +133,10 @@ MetaMode/
 
 ## Integrations
 
-MetaMode works well with external tools for browsing, reviewing, and learning from your wiki:
+MetaMode connects with external tools to capture, browse, and review your knowledge. See [Ecosystem overview](docs/ecosystem.md) for how everything fits together.
 
 - **[Obsidian](docs/obsidian-setup.md)** — browse wiki with graph view, search, and backlinks
+- **[Web Clipper](docs/web-clipper-setup.md)** — save web pages into Claude's memory with one click
 - **[NotebookLM](docs/notebooklm-setup.md)** — generate audio overviews and chat with your knowledge base
 - **[RAW Inbox](docs/raw-inbox.md)** — ingest external documents (articles, notes, transcripts) into the wiki
 

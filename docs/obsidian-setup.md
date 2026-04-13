@@ -45,3 +45,15 @@ Since MetaMode captures knowledge from ALL projects (global hooks), Obsidian's g
 - **No custom plugins required.** Everything works with vanilla Obsidian.
 - **Don't rename files in Obsidian** if you want wikilinks to stay consistent. Use MetaMode's compile pipeline for structural changes.
 - **The vault is the MetaMode root**, not just `knowledge/`. This lets you see daily logs, raw inbox, and knowledge articles in one place.
+
+## Web Clipper
+
+Obsidian Web Clipper saves web pages directly into MetaMode's `raw/` inbox. One click to clip, one command to ingest — Claude remembers what you read.
+
+See [Web Clipper setup](web-clipper-setup.md) for installation and configuration.
+
+## See Also
+
+- [Ecosystem overview](ecosystem.md) — how Obsidian fits into the full MetaMode pipeline
+- [Web Clipper setup](web-clipper-setup.md) — save web pages into Claude's memory
+- [NotebookLM setup](notebooklm-setup.md) — audio overviews and chat with your knowledge
