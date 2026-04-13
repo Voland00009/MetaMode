@@ -151,7 +151,7 @@ cp -r skills/* ~/.claude/SKILLS/
 
 Available skills:
 
-- **wrapup** — end-of-session summary, saves memories, pushes log to NotebookLM
+- **wrapup** — end-of-session summary, saves key memories
 - **notebooklm** — interact with NotebookLM from Claude Code (create notebooks, add sources, generate audio)
 
 > Skills in the repo are clean templates. After copying, customize them locally (e.g., add environment-specific auth or paths). Local changes won't affect the repo.
