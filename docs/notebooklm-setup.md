@@ -114,3 +114,9 @@ Podcasts, quizzes, reports, search
 | Generation stuck at "in_progress" | Wait (audio: 10-20min, video: 15-45min) or retry |
 | "No notebook context" | Run `notebooklm use <id>` to select a notebook |
 | Rate limit errors | Wait 5-10 minutes, then retry |
+
+## See Also
+
+- [Ecosystem overview](ecosystem.md) — how NotebookLM fits into the full MetaMode pipeline
+- [Obsidian setup](obsidian-setup.md) — browse and visualize your wiki
+- [RAW Inbox](raw-inbox.md) — ingest external documents into the wiki

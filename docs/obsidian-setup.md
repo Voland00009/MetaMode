@@ -2,6 +2,16 @@
 
 MetaMode's `knowledge/` directory is a native Obsidian vault. No plugins or extensions needed — Obsidian reads markdown and wikilinks (`[[concept]]`) out of the box.
 
+## Why This Matters
+
+MetaMode builds a wiki of everything you learn across projects — but markdown files in a directory are hard to explore. Obsidian turns that directory into a visual, searchable knowledge base:
+
+- **Graph view** shows connections between concepts from different projects and sessions — patterns you'd never spot by reading files one at a time
+- **Instant search** across all daily logs, wiki articles, and raw inbox — faster than grep, with preview
+- **Direct editing** — change wiki articles in Obsidian and MetaMode picks up the changes (it's the same files on disk)
+
+Obsidian is optional — MetaMode works fully without it. But without Obsidian, you lose the visual layer that makes accumulated knowledge actually discoverable.
+
 ## Setup
 
 1. [Download Obsidian](https://obsidian.md/) (free for personal use)

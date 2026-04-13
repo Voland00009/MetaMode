@@ -76,3 +76,9 @@ Say 'обработай RAW' or run `uv run python scripts/ingest_raw.py`.
 - **Don't worry about perfection** — the ingestion script extracts structure even from rough notes
 - **Check results after ingestion** — open `knowledge/index.md` to verify new articles look right
 - **Git tracks everything** — if an ingestion produces bad results, `git checkout` reverts it
+
+## See Also
+
+- [Ecosystem overview](ecosystem.md) — how RAW inbox fits into the full MetaMode pipeline
+- [Web Clipper setup](web-clipper-setup.md) — clip web pages directly into RAW inbox
+- [Obsidian setup](obsidian-setup.md) — browse and visualize your wiki
