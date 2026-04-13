@@ -36,18 +36,44 @@ cd MetaMode
 uv sync
 ```
 
+**Timezone** — by default MetaMode uses the system timezone. To override, set `METAMODE_TIMEZONE`:
+
+```bash
+export METAMODE_TIMEZONE=Europe/Moscow  # or America/New_York, Asia/Tokyo, etc.
+```
+
 Hooks are configured globally in `~/.claude/settings.json` — they fire from any project:
 
 ```json
 {
   "hooks": {
-    "SessionStart": [{"type": "command", "command": "uv run --directory C:/Users/Voland/Dev/MetaMode python hooks/session_start.py"}],
-    "SessionEnd": [{"type": "command", "command": "uv run --directory C:/Users/Voland/Dev/MetaMode python hooks/session-end.py"}],
-    "PreCompact": [{"type": "command", "command": "uv run --directory C:/Users/Voland/Dev/MetaMode python hooks/pre-compact.py"}],
-    "UserPromptSubmit": [{"type": "command", "command": "uv run --directory C:/Users/Voland/Dev/MetaMode python hooks/user_prompt_submit.py"}]
+    "SessionStart": [
+      { "matcher": "", "hooks": [
+        { "type": "command", "command": "uv run --directory /FULL/PATH/TO/MetaMode python hooks/session_start.py", "timeout": 10 }
+      ]}
+    ],
+    "SessionEnd": [
+      { "matcher": "", "hooks": [
+        { "type": "command", "command": "uv run --directory /FULL/PATH/TO/MetaMode python hooks/session_end.py", "timeout": 10 }
+      ]}
+    ],
+    "PreCompact": [
+      { "matcher": "", "hooks": [
+        { "type": "command", "command": "uv run --directory /FULL/PATH/TO/MetaMode python hooks/pre_compact.py", "timeout": 10 }
+      ]}
+    ],
+    "UserPromptSubmit": [
+      { "matcher": "^!save", "hooks": [
+        { "type": "command", "command": "uv run --directory /FULL/PATH/TO/MetaMode python hooks/user_prompt_submit.py", "timeout": 5 }
+      ]}
+    ]
   }
 }
 ```
+
+> Replace `/FULL/PATH/TO/MetaMode` with your actual clone path (e.g., `~/Dev/MetaMode` on macOS/Linux, `C:/Users/you/Dev/MetaMode` on Windows).
+>
+> `matcher: ""` means the hook fires for all projects. `UserPromptSubmit` uses `"^!save"` to only trigger on `!save` commands.
 
 ## Usage
 
@@ -69,14 +95,16 @@ Hooks are configured globally in `~/.claude/settings.json` — they fire from an
 MetaMode/
 ├── hooks/              # Claude Code lifecycle hooks
 │   ├── session_start.py    # Injects context at start
-│   ├─�� session-end.py      # Captures transcript on exit
-│   ├── pre-compact.py      # Captures before auto-compaction
-│   └── user_prompt_submit.py  # !save interceptor
+│   ├── session_end.py      # Captures transcript on exit
+│   ├── pre_compact.py      # Captures before auto-compaction
+│   ├── user_prompt_submit.py  # !save interceptor
+│   └── shared.py           # Common utilities for hooks
 ├── scripts/            # Core pipeline
 │   ├── flush.py            # Transcript → daily log (Agent SDK)
 │   ├── compile.py          # Daily logs → wiki articles
 │   ├── ingest_raw.py       # External docs → wiki articles
 │   ├── lint.py             # 7 health checks
+│   ├── memory_lint.py      # Auto-memory health checks
 │   ├── query.py            # CLI wiki queries
 │   ├── config.py           # Paths and constants
 │   └── utils.py            # Shared utilities
@@ -102,6 +130,41 @@ MetaMode/
 5. **Cost tracking** — `state.json` accumulates total Agent SDK cost
 6. **Auto compile trigger** — flush.py spawns compile.py after 18:00 if logs changed
 7. **Article categorization** — tags and category fields in AGENTS.md schema
+
+## Integrations
+
+MetaMode works well with external tools for browsing, reviewing, and learning from your wiki:
+
+- **[Obsidian](docs/obsidian-setup.md)** — browse wiki with graph view, search, and backlinks
+- **[NotebookLM](docs/notebooklm-setup.md)** — generate audio overviews and chat with your knowledge base
+- **[RAW Inbox](docs/raw-inbox.md)** — ingest external documents (articles, notes, transcripts) into the wiki
+
+## Skills
+
+MetaMode includes optional Claude Code skills in `skills/`. To install:
+
+```bash
+# Copy to your global skills directory
+cp -r skills/* ~/.claude/SKILLS/
+```
+
+Available skills:
+
+- **wrapup** — end-of-session summary, saves memories, pushes log to NotebookLM
+- **notebooklm** — interact with NotebookLM from Claude Code (create notebooks, add sources, generate audio)
+
+> Skills in the repo are clean templates. After copying, customize them locally (e.g., add environment-specific auth or paths). Local changes won't affect the repo.
+
+## Maintenance
+
+MetaMode reminds you about pending maintenance at session start:
+
+- **Compile** — when 3+ daily logs are uncompiled, you'll see a reminder
+- **Wiki lint** — if `scripts/lint.py` hasn't run in 7+ days
+- **Memory lint** — if `scripts/memory_lint.py` hasn't run in 14+ days
+- **RAW inbox** — when unprocessed files are waiting in `raw/`
+
+Run lint manually: `uv run python scripts/lint.py`
 
 ## Cost
 
