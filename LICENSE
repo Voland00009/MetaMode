@@ -19,3 +19,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Acknowledgments
+
+This project is a fork of
+[coleam00/claude-memory-compiler](https://github.com/coleam00/claude-memory-compiler)
+by Cole Medin, which is itself adapted from
+[Andrej Karpathy's LLM Knowledge Base](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+architecture.
+
+At the time of forking (April 2026), the upstream repository did not include a
+license file. A request to add one has been filed
+(https://github.com/coleam00/claude-memory-compiler/issues/11). If the upstream
+author chooses a license that imposes additional conditions, this project will
+comply accordingly.

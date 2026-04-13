@@ -44,3 +44,6 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Media (podcasts, presentations — use GitHub Releases instead)
+media/
