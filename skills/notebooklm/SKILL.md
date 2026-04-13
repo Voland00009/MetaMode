@@ -81,20 +81,45 @@ Tell the user:
 Then write and run this login script:
 
 ```bash
-cat > /tmp/nlm_login.py << 'PYEOF'
-import json, os, time
+NLM_DIR="$HOME/.notebooklm"
+mkdir -p "$NLM_DIR"
+
+cat > "$NLM_DIR/nlm_login.py" << 'PYEOF'
+import json, subprocess, sys, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-STORAGE_PATH = Path.home() / ".notebooklm" / "storage_state.json"
-PROFILE_PATH = Path.home() / ".notebooklm" / "browser_profile"
-SIGNAL_FILE = Path("/tmp/nlm_save_signal")
+NLM_DIR = Path.home() / ".notebooklm"
+STORAGE_PATH = NLM_DIR / "storage_state.json"
+PROFILE_PATH = NLM_DIR / "browser_profile"
+SIGNAL_FILE = NLM_DIR / "save_signal"
 
 SIGNAL_FILE.unlink(missing_ok=True)
-STORAGE_PATH.parent.mkdir(parents=True, exist_ok=True)
+NLM_DIR.mkdir(parents=True, exist_ok=True)
 
-print("Opening browser for Google login...")
-print("Sign in to Google and navigate to notebooklm.google.com")
+# Kill stale Playwright Chromium processes that may hold locks on browser_profile
+try:
+    subprocess.run(
+        ["taskkill", "/F", "/IM", "chromium.exe"],
+        capture_output=True, timeout=5,
+    )
+except Exception:
+    pass  # No stale processes — fine
+
+# Remove lock files that prevent launch_persistent_context from starting
+for lock in PROFILE_PATH.glob("*.lock"):
+    try:
+        lock.unlink()
+    except OSError:
+        pass
+if (PROFILE_PATH / "SingletonLock").exists():
+    try:
+        (PROFILE_PATH / "SingletonLock").unlink()
+    except OSError:
+        pass
+
+print("Opening browser for Google login...", flush=True)
+print("Sign in to Google and navigate to notebooklm.google.com", flush=True)
 
 with sync_playwright() as p:
     browser = p.chromium.launch_persistent_context(
@@ -105,26 +130,26 @@ with sync_playwright() as p:
     page = browser.pages[0] if browser.pages else browser.new_page()
     page.goto("https://notebooklm.google.com/")
 
-    print("Browser is open. Waiting for save signal...")
+    print("Browser is open. Waiting for save signal...", flush=True)
     while not SIGNAL_FILE.exists():
         time.sleep(1)
 
-    print("Save signal received! Capturing session...")
+    print("Save signal received! Capturing session...", flush=True)
     storage = browser.storage_state()
     with open(STORAGE_PATH, "w") as f:
         json.dump(storage, f)
 
     cookie_names = [c["name"] for c in storage.get("cookies", [])]
-    print(f"Saved {len(cookie_names)} cookies: {cookie_names}")
+    print(f"Saved {len(cookie_names)} cookies: {cookie_names}", flush=True)
     browser.close()
 
 SIGNAL_FILE.unlink(missing_ok=True)
-print(f"Authentication saved to: {STORAGE_PATH}")
+print(f"Authentication saved to: {STORAGE_PATH}", flush=True)
 PYEOF
 
 # Run the login script in the background
 source ~/.notebooklm-venv/bin/activate
-python3 /tmp/nlm_login.py > /tmp/nlm_login_output.txt 2>&1 &
+python3 "$NLM_DIR/nlm_login.py" > "$NLM_DIR/nlm_login_output.txt" 2>&1 &
 echo "Login started (PID=$!). Browser should open in a few seconds..."
 ```
 
@@ -133,9 +158,10 @@ Wait ~10 seconds for the browser to open, then ask the user if they can see the 
 Once the user confirms they are on the NotebookLM homepage, save the session:
 
 ```bash
-touch /tmp/nlm_save_signal
+NLM_DIR="$HOME/.notebooklm"
+touch "$NLM_DIR/save_signal"
 sleep 8
-cat /tmp/nlm_login_output.txt
+cat "$NLM_DIR/nlm_login_output.txt"
 ```
 
 Then verify authentication:
@@ -146,10 +172,11 @@ notebooklm auth check
 notebooklm list
 ```
 
-If auth passes (SID cookie present), confirm to the user that NotebookLM is set up and ready. Clean up the temp script:
+If auth passes (SID cookie present), confirm to the user that NotebookLM is set up and ready. Clean up the temp files:
 
 ```bash
-rm -f /tmp/nlm_login.py /tmp/nlm_login_output.txt /tmp/nlm_save_signal
+NLM_DIR="$HOME/.notebooklm"
+rm -f "$NLM_DIR/nlm_login.py" "$NLM_DIR/nlm_login_output.txt" "$NLM_DIR/save_signal"
 ```
 
 If auth fails (SID cookie missing), the user may not have fully signed in. Delete the browser profile and retry:
@@ -163,6 +190,78 @@ Then run the login script again from the top.
 ### Cookie Expiration
 
 **Known limitation:** Google cookies expire every 1-7 days. This is inherent to the unofficial API approach (notebooklm-py uses browser automation, not OAuth). When you see auth errors, re-run the login flow above. There is no way to prevent this — it's Google's security policy.
+
+---
+
+## Adding NotebookLM to Co-work
+
+When the user asks to "add this to Co-work", "use this in Co-work", or "make this work in Co-work":
+
+### Step 1: Check auth exists
+
+```bash
+cat ~/.notebooklm/storage_state.json > /dev/null 2>&1
+```
+
+If it doesn't exist, run the install and authenticate steps above first.
+
+### Step 2: Generate the Co-work skill file
+
+Read the contents of this skill file you are currently using. Then read the contents of `~/.notebooklm/storage_state.json`.
+
+**IMPORTANT — Strip cookies before embedding:** Co-work is sandboxed and can't read local files, so cookies must be inlined. But the full storage_state.json contains duplicate cookies across multiple Google domains (.google.ae, .google.co.uk, .youtube.com, etc.) that are NOT needed. Strip them to save ~55% of tokens.
+
+Run this to generate the minimal auth JSON:
+```bash
+python3 << 'PYEOF'
+import json
+
+with open("$HOME/.notebooklm/storage_state.json") as f:
+    data = json.load(f)
+
+# Only these domains are needed for NotebookLM auth
+essential_domains = {".google.com", "notebooklm.google.com", "accounts.google.com"}
+# Skip analytics/tracking cookies
+skip_names = {"_gcl_au", "_ga", "_ga_W0LDH41ZCB", "OTZ", "ACCOUNT_CHOOSER"}
+
+stripped = {
+    "cookies": [c for c in data["cookies"] if c["domain"] in essential_domains and c["name"] not in skip_names],
+    "origins": [o for o in data.get("origins", []) if "notebooklm" in o.get("origin", "")]
+}
+print(json.dumps(stripped, separators=(',',':')))
+PYEOF
+```
+
+Create a MODIFIED copy of this skill file where you replace the entire "Step 0: Setup" section and "Adding NotebookLM to Co-work" section with this:
+
+```markdown
+## Auto-Authentication (Co-work)
+
+This skill runs in a sandboxed Co-work environment. Before running ANY notebooklm command, run these setup commands:
+
+\`\`\`bash
+pip install notebooklm-py 2>/dev/null
+export NOTEBOOKLM_AUTH_JSON='<STRIPPED MINIMAL AUTH JSON FROM ABOVE>'
+\`\`\`
+
+Then verify:
+\`\`\`bash
+notebooklm auth check
+notebooklm list
+\`\`\`
+
+If auth fails, the cookies may have expired. Ask the user to re-run `notebooklm login` in Claude Code and regenerate this file.
+```
+
+### Step 3: Save and instruct
+
+Save the file to the user's Desktop as `NotebookLMSkill-Cowork.md`.
+
+Tell the user:
+
+> Done! I've saved the Co-work skill to your Desktop as `NotebookLMSkill-Cowork.md`. Upload it as a skill in Claude Co-work and you'll have full NotebookLM access there too.
+>
+> I've stripped the cookies down to only the 21 essential ones (~1,400 tokens instead of ~3,100). When they expire, just come back to Claude Code and say "regenerate my Co-work NotebookLM skill" and I'll make a fresh one.
 
 ---
 
@@ -181,6 +280,7 @@ Then run the login script again from the top.
 - "Create a mind map of the concepts"
 - "Download the quiz as markdown"
 - "Add these sources to NotebookLM"
+- "Add this to Co-work" / "Make this work in Co-work"
 
 ## Autonomy Rules
 

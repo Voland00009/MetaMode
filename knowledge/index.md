@@ -42,3 +42,4 @@
 | [[connections/git-unrelated-histories-and-tooling-boundaries]] | Unrelated histories is a boundary mismatch bug in the same family as PATH/escaping/arg-length issues | raw/git-unrelated-histories-branch-strategy.md | 2026-04-13 |
 | [[concepts/python-path-tmp-windows-mismatch]] | Python `Path("/tmp")` → `C:\tmp` but bash `/tmp` → MSYS2 temp; cross-process signal files silently break | raw/python-path-tmp-windows-mismatch.md | 2026-04-13 |
 | [[concepts/python-stdout-buffering-file-redirect]] | `print()` buffers when stdout redirected to file; add `flush=True` or log appears empty until exit | raw/python-path-tmp-windows-mismatch.md | 2026-04-13 |
+| [[concepts/playwright-browser-profile-lock-cleanup]] | Stale `SingletonLock` in browser_profile hangs `launch_persistent_context()`; kill chromium + rm locks before launch | plans/next-session-notebooklm-login-fix.md | 2026-04-13 |

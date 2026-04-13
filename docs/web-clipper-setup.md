@@ -24,7 +24,7 @@ Without Web Clipper, you'd have to copy-paste content into Claude's context wind
 
 ## Prerequisites
 
-- Obsidian installed with `knowledge/` opened as vault
+- Obsidian installed with `MetaMode/` opened as vault (see [Obsidian setup](obsidian-setup.md))
 - Chrome or Firefox browser
 
 ## Step 1: Install Obsidian Web Clipper
@@ -38,11 +38,11 @@ Without Web Clipper, you'd have to copy-paste content into Claude's context wind
 1. Click the Web Clipper icon in browser toolbar
 2. Click the gear icon (Settings)
 3. Under **General**:
-   - Vault: select the vault that points to `knowledge/`
+   - Vault: select the vault that points to your `MetaMode/` root directory (same vault as in [Obsidian setup](obsidian-setup.md))
 4. Under **Templates**:
    - Create a new template called "MetaMode RAW"
    - **Note name**: `{{title|slugify}}`
-   - **Save to folder**: `../raw` (relative to knowledge/ vault root)
+   - **Save to folder**: `raw` (relative to vault root = MetaMode/)
    - **Template content**:
 
 ```markdown
@@ -96,7 +96,7 @@ This will:
 
 ## Troubleshooting
 
-**Clip goes to wrong folder**: Check that the template's "Save to folder" path is `../raw` (one level up from the vault root `knowledge/`).
+**Clip goes to wrong folder**: Check that the template's "Save to folder" path is `raw` (relative to your MetaMode vault root).
 
 **Images not downloading**: Make sure "Local Images Plus" is enabled and configured with the correct media folder path.
 
