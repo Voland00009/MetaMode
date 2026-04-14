@@ -72,6 +72,7 @@ async def run_flush(context: str) -> str:
     """Use Claude Agent SDK to extract knowledge from conversation context."""
     from claude_agent_sdk import (
         AssistantMessage,
+        ClaudeSDKError,
         ResultMessage,
         TextBlock,
         query,
@@ -127,13 +128,12 @@ respond with exactly: FLUSH_OK
             elif isinstance(message, ResultMessage):
                 if message.total_cost_usd:
                     _accumulate_cost(message.total_cost_usd)
-    except subprocess.SubprocessError as e:
-        # Catches CalledProcessError (with returncode/stderr) and similar
+    except ClaudeSDKError as e:
         import traceback
         stderr_text = getattr(e, "stderr", None) or ""
-        exit_code = getattr(e, "returncode", None)
+        exit_code = getattr(e, "exit_code", None)
         logging.error(
-            "Agent SDK subprocess error (exit=%s): %s\nstderr: %s\n%s",
+            "Agent SDK error (exit=%s): %s\nstderr: %s\n%s",
             exit_code, e, stderr_text, traceback.format_exc(),
         )
         response = f"FLUSH_ERROR: {type(e).__name__} (exit={exit_code}): {e}"

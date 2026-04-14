@@ -133,6 +133,7 @@ async def _check_contradictions_async() -> list[dict]:
     """Use Claude Agent SDK to detect contradictions across articles."""
     from claude_agent_sdk import (
         AssistantMessage,
+        ClaudeSDKError,
         ResultMessage,
         TextBlock,
         query,
@@ -179,6 +180,13 @@ Do NOT output anything else - no preamble, no explanation, just the formatted li
                         response += block.text
             elif isinstance(message, ResultMessage):
                 pass
+    except ClaudeSDKError as e:
+        exit_code = getattr(e, "exit_code", None)
+        stderr_text = getattr(e, "stderr", None) or ""
+        detail = f"LLM check failed (exit={exit_code}): {type(e).__name__}: {e}"
+        if stderr_text:
+            detail += f" | stderr: {stderr_text}"
+        return [{"severity": "error", "check": "contradiction", "file": "(system)", "detail": detail}]
     except Exception as e:
         return [{"severity": "error", "check": "contradiction", "file": "(system)", "detail": f"LLM check failed: {e}"}]
 

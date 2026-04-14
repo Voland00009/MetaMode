@@ -29,6 +29,7 @@ async def compile_daily_log(log_path: Path, state: dict) -> None:
     """Compile a single daily log into knowledge articles."""
     from claude_agent_sdk import (
         AssistantMessage,
+        ClaudeSDKError,
         ResultMessage,
         TextBlock,
         query,
@@ -145,6 +146,14 @@ Read the daily log above and compile it into wiki articles following the schema 
             elif isinstance(message, ResultMessage):
                 if message.total_cost_usd:
                     state["total_cost"] = state.get("total_cost", 0.0) + message.total_cost_usd
+    except ClaudeSDKError as e:
+        exit_code = getattr(e, "exit_code", None)
+        stderr_text = getattr(e, "stderr", None) or ""
+        print(f"  SDK error (exit={exit_code}): {type(e).__name__}: {e}")
+        if stderr_text:
+            for line in str(stderr_text).splitlines():
+                print(f"    stderr: {line}")
+        return
     except Exception as e:
         print(f"  Error: {e}")
         return

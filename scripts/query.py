@@ -18,6 +18,7 @@ from utils import load_state, read_all_wiki_content, save_state
 async def run_query(question: str, file_back: bool = False) -> str:
     from claude_agent_sdk import (
         AssistantMessage,
+        ClaudeSDKError,
         ResultMessage,
         TextBlock,
         query,
@@ -91,6 +92,12 @@ consulting the knowledge base below.
             elif isinstance(message, ResultMessage):
                 if message.total_cost_usd:
                     cost = message.total_cost_usd
+    except ClaudeSDKError as e:
+        exit_code = getattr(e, "exit_code", None)
+        stderr_text = getattr(e, "stderr", None) or ""
+        answer = f"Error querying knowledge base (exit={exit_code}): {type(e).__name__}: {e}"
+        if stderr_text:
+            answer += f"\nstderr: {stderr_text}"
     except Exception as e:
         answer = f"Error querying knowledge base: {e}"
 

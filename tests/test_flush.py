@@ -115,3 +115,19 @@ async def test_run_flush_handles_error():
         result = await flush.run_flush("Context")
         assert "FLUSH_ERROR" in result
         assert "RuntimeError" in result
+
+
+@pytest.mark.asyncio
+async def test_run_flush_handles_process_error():
+    """run_flush should surface exit_code and stderr from ClaudeSDKError (ProcessError)."""
+    from claude_agent_sdk import ProcessError
+
+    async def failing_query(**kwargs):
+        raise ProcessError("CLI failed", exit_code=1, stderr="boom stderr line")
+        yield  # noqa: E501
+
+    with patch("claude_agent_sdk.query", side_effect=failing_query):
+        result = await flush.run_flush("Context")
+        assert "FLUSH_ERROR" in result
+        assert "ProcessError" in result
+        assert "exit=1" in result
