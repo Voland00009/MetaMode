@@ -309,3 +309,21 @@ User types "!save important note"
 - `subprocess.CREATE_NO_WINDOW` flag prevents console windows from flashing when spawning background processes
 - `sys.stdin.reconfigure(encoding="utf-8")` in hooks — Windows defaults to cp1251/cp1252 encoding
 - JSON parsing includes a fallback for unescaped backslashes in Windows paths
+
+## Cost tracking
+
+MetaMode runs every LLM call through the Claude Agent SDK, which uses your Claude Max subscription. You are not billed per token. Max covers all usage.
+
+So why does `scripts/state.json` accumulate a `total_cost` field?
+
+After every Agent SDK call, the final `ResultMessage` carries a `total_cost_usd` value — the SDK's own **API-equivalent** estimate of what that call would have cost at per-token API rates. MetaMode sums these into `state["total_cost"]` (see `_accumulate_cost` in [`scripts/flush.py`](../scripts/flush.py); `compile.py`, `query.py`, and `ingest_raw.py` do the same inline). The figure is informational — what these calls *would* cost without a Max subscription.
+
+Use cases:
+
+- **Sanity check** — catches runaway loops (e.g. `compile.py` stuck re-processing the same day)
+- **Capacity planning** — if you ever migrate off Max, this is your projected monthly bill
+- **Curiosity** — see what Max is saving you
+
+**Resetting**: delete `scripts/state.json`. The next hook run recreates it from zero. Daily logs and wiki articles are not affected.
+
+**Disabling**: there is no flag — the field is always written. To stop tracking, remove the `state["total_cost"] += ...` lines (four call sites across `flush.py`, `compile.py`, `query.py`, `ingest_raw.py`).

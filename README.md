@@ -89,6 +89,29 @@ Hooks are configured globally in `~/.claude/settings.json` — they fire from an
 
 **Lint** — `uv run python scripts/lint.py` (7 structural checks + LLM contradiction detection)
 
+## Documentation
+
+Full documentation lives in [docs/](docs/).
+
+### Getting started
+
+- [setup.md](docs/setup.md) — step-by-step install for macOS, Linux, Windows (with troubleshooting)
+- [commands.md](docs/commands.md) — every command with flags and examples
+- [cheatsheet.ru.md](docs/cheatsheet.ru.md) — one-page quick reference *(RU only for now — EN translation pending)*
+
+### Understanding MetaMode
+
+- [how-it-works.md](docs/how-it-works.md) — architecture, pipelines, design decisions
+- [features.md](docs/features.md) — full feature list end-to-end
+- [ecosystem.md](docs/ecosystem.md) — how MetaMode fits with Obsidian, NotebookLM, Web Clipper
+
+### Advanced
+
+- [cross-project-template.md](docs/cross-project-template.md) — give other projects read access to your wiki
+- [raw-inbox.md](docs/raw-inbox.md) — ingest external documents (articles, notes, transcripts)
+
+Russian translations of the docs above are available as `*.ru.md` siblings (e.g. [setup.ru.md](docs/setup.ru.md)).
+
 ## Project structure
 
 ```
@@ -169,7 +192,9 @@ Run lint manually: `uv run python scripts/lint.py`
 
 ## Cost
 
-$0/month beyond Claude Max subscription. All Agent SDK calls are covered by Max.
+**$0/month beyond Claude Max subscription.** All Agent SDK calls are covered by Max — no API keys, no per-token billing.
+
+> `scripts/state.json` tracks `total_cost` as the *API-equivalent* dollar value — what these calls would cost at per-token API rates. Max covers this; you never see a separate bill. See [Cost tracking](docs/how-it-works.md#cost-tracking) in `how-it-works.md` for details.
 
 ## Stack
 

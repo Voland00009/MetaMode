@@ -134,13 +134,36 @@ MetaMode/
 
 **$0/месяц** — все LLM-вызовы идут через Claude Agent SDK, который входит в подписку Claude Max. Без API-ключей, без поминутной тарификации.
 
+> `scripts/state.json` накапливает `total_cost` — это *эквивалент в долларах*, сколько такие вызовы стоили бы по API-тарифам. Max покрывает это; отдельного счёта не будет. Подробнее — [Cost tracking](docs/how-it-works.md#cost-tracking) в `how-it-works.md`.
+
 ## Документация
 
-- **[Руководство по установке](docs/setup.ru.md)** — пошаговая установка (кросс-платформенная)
-- **[Справочник команд](docs/commands.ru.md)** — все команды с флагами, примерами и деревом решений
-- **[Как это работает](docs/how-it-works.ru.md)** — подробный разбор пайплайна и архитектуры
-- **[Шпаргалка](docs/cheatsheet.ru.md)** — краткая справочная карточка
-- **[Шаблон для других проектов](docs/cross-project-template.ru.md)** — как дать другим проектам доступ к вашей wiki на чтение
+Вся документация лежит в [docs/](docs/).
+
+### С чего начать
+
+- [setup.ru.md](docs/setup.ru.md) — пошаговая установка (macOS, Linux, Windows) с траблшутингом
+- [commands.ru.md](docs/commands.ru.md) — все команды с флагами и примерами
+- [cheatsheet.ru.md](docs/cheatsheet.ru.md) — шпаргалка на одну страницу
+
+### Как всё устроено
+
+- [how-it-works.ru.md](docs/how-it-works.ru.md) — архитектура, пайплайны, дизайн-решения
+- [features.ru.md](docs/features.ru.md) — полный список возможностей
+- [ecosystem.md](docs/ecosystem.md) — как MetaMode стыкуется с Obsidian, NotebookLM, Web Clipper *(EN)*
+
+### Интеграции
+
+- [obsidian-setup.md](docs/obsidian-setup.md) — браузер wiki с графом и обратными ссылками *(EN)*
+- [web-clipper-setup.md](docs/web-clipper-setup.md) — сохранение веб-страниц в память Claude одним кликом *(EN)*
+- [notebooklm-setup.md](docs/notebooklm-setup.md) — аудио-обзоры и чат с базой знаний *(EN)*
+- [raw-inbox.md](docs/raw-inbox.md) — как загружать внешние документы в wiki *(EN)*
+
+### Для опытных
+
+- [cross-project-template.ru.md](docs/cross-project-template.ru.md) — как дать другим проектам доступ к вашей wiki на чтение
+
+Английские версии доступны как `*.md`-соседи рядом с RU-файлами (например, [setup.md](docs/setup.md)).
 
 ## Участие в разработке
 
