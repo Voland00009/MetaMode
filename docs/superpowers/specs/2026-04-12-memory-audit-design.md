@@ -33,10 +33,10 @@
 
 | Directory | Files | Size | Status |
 |-----------|-------|------|--------|
-| `c--Users-Voland-Dev-MetaMode` | 21 memory files | 22MB (incl. sessions) | Active, bloated |
-| `C--Users-Voland` | 7 memory files | 18MB | Stale? |
-| `h---Training---automation-Projects` | 19 memory files | 87MB | Active (wife's site) |
-| `c--Users-Voland-Dev` | 0 memory files | 20KB | Empty |
+| `<main-project>` | 21 memory files | 22MB (incl. sessions) | Active, bloated |
+| `<home-dir>` | 7 memory files | 18MB | Stale? |
+| `<training-project>` | 19 memory files | 87MB | Active (wife's site) |
+| `<dev-parent>` | 0 memory files | 20KB | Empty |
 
 ### Key metrics
 
@@ -99,7 +99,7 @@ Source: https://github.com/affaan-m/everything-claude-code
 
 ### Session 1: Cleanup & .claudeignore ✅ (2026-04-12)
 
-- [x] Delete stale memory files — 10 from MetaMode, 4 from C--Users-Voland, 7 from Training (18 total)
+- [x] Delete stale memory files — 10 from MetaMode, 4 from home-dir project, 7 from Training (18 total)
 - [x] Review and clean memory in other project dirs (47 → 29 files, -38%)
 - [x] Create `.claudeignore` for MetaMode
 - [ ] ~~Create `.claudeignore` template for other projects~~ (deferred to S2)
