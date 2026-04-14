@@ -139,7 +139,7 @@ MetaMode/
 │   ├── connections/        # Cross-concept relationships
 │   └── qa/                 # Saved Q&A answers
 ├── raw/                # External document inbox
-├── input/              # Reference materials (not processed)
+├── reports/            # Lint reports
 ├── AGENTS.md           # Wiki article schema
 └── CLAUDE.md           # Project instructions
 ```
