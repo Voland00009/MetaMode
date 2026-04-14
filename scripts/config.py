@@ -42,3 +42,36 @@ def now_iso() -> str:
 def today_iso() -> str:
     """Current date as YYYY-MM-DD in configured timezone."""
     return now_local().strftime("%Y-%m-%d")
+
+
+import logging
+
+_sdk_logger = logging.getLogger("metamode.sdk")
+
+
+def _sdk_stderr_handler(line: str) -> None:
+    stripped = line.rstrip()
+    if stripped:
+        _sdk_logger.warning("SDK stderr: %s", stripped)
+
+
+def build_agent_options(**kwargs):
+    """Build ClaudeAgentOptions with MCP isolation and live stderr logging.
+
+    Injects two cross-cutting invariants into every Agent SDK entrypoint:
+
+    * ``extra_args={"strict-mcp-config": None}`` — passes ``--strict-mcp-config``
+      to the Claude CLI, so subprocesses run with zero MCP servers instead of
+      inheriting account-level MCP discovery. Caller-provided extra_args are
+      merged on top.
+    * ``stderr=_sdk_stderr_handler`` — routes live CLI stderr (line-by-line)
+      through ``logging.getLogger("metamode.sdk")``, which propagates to each
+      script's configured root handler (flush.log / compile.log / terminal).
+      Caller can override by passing ``stderr=...``.
+    """
+    from claude_agent_sdk import ClaudeAgentOptions
+
+    extra = {"strict-mcp-config": None}
+    extra.update(kwargs.pop("extra_args", None) or {})
+    kwargs.setdefault("stderr", _sdk_stderr_handler)
+    return ClaudeAgentOptions(extra_args=extra, **kwargs)

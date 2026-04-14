@@ -11,14 +11,13 @@ import argparse
 import asyncio
 import sys
 
-from config import KNOWLEDGE_DIR, QA_DIR, ROOT_DIR, now_iso
+from config import KNOWLEDGE_DIR, QA_DIR, ROOT_DIR, build_agent_options, now_iso
 from utils import load_state, read_all_wiki_content, save_state
 
 
 async def run_query(question: str, file_back: bool = False) -> str:
     from claude_agent_sdk import (
         AssistantMessage,
-        ClaudeAgentOptions,
         ResultMessage,
         TextBlock,
         query,
@@ -77,7 +76,7 @@ consulting the knowledge base below.
     try:
         async for message in query(
             prompt=prompt,
-            options=ClaudeAgentOptions(
+            options=build_agent_options(
                 cwd=str(ROOT_DIR),
                 system_prompt={"type": "preset", "preset": "claude_code"},
                 allowed_tools=tools,

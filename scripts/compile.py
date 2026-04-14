@@ -14,7 +14,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-from config import AGENTS_FILE, CONCEPTS_DIR, CONNECTIONS_DIR, DAILY_DIR, KNOWLEDGE_DIR, ROOT_DIR, now_iso
+from config import AGENTS_FILE, CONCEPTS_DIR, CONNECTIONS_DIR, DAILY_DIR, KNOWLEDGE_DIR, ROOT_DIR, build_agent_options, now_iso
 from utils import (
     file_hash,
     list_raw_files,
@@ -29,7 +29,6 @@ async def compile_daily_log(log_path: Path, state: dict) -> None:
     """Compile a single daily log into knowledge articles."""
     from claude_agent_sdk import (
         AssistantMessage,
-        ClaudeAgentOptions,
         ResultMessage,
         TextBlock,
         query,
@@ -131,7 +130,7 @@ Read the daily log above and compile it into wiki articles following the schema 
     try:
         async for message in query(
             prompt=prompt,
-            options=ClaudeAgentOptions(
+            options=build_agent_options(
                 cwd=str(ROOT_DIR),
                 system_prompt={"type": "preset", "preset": "claude_code"},
                 allowed_tools=["Read", "Write", "Edit", "Glob", "Grep"],

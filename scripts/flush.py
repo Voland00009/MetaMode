@@ -22,7 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
-from config import now_local  # noqa: E402
+from config import build_agent_options, now_local  # noqa: E402
 
 DAILY_DIR = ROOT / "daily"
 SCRIPTS_DIR = ROOT / "scripts"
@@ -72,7 +72,6 @@ async def run_flush(context: str) -> str:
     """Use Claude Agent SDK to extract knowledge from conversation context."""
     from claude_agent_sdk import (
         AssistantMessage,
-        ClaudeAgentOptions,
         ResultMessage,
         TextBlock,
         query,
@@ -115,7 +114,7 @@ respond with exactly: FLUSH_OK
     try:
         async for message in query(
             prompt=prompt,
-            options=ClaudeAgentOptions(
+            options=build_agent_options(
                 cwd=str(ROOT),
                 allowed_tools=[],
                 max_turns=2,
@@ -169,7 +168,6 @@ async def run_quality_audit(content: str) -> str | None:
     """
     from claude_agent_sdk import (
         AssistantMessage,
-        ClaudeAgentOptions,
         ResultMessage,
         TextBlock,
         query,
@@ -206,7 +204,7 @@ Respond with ONLY one of these two formats, nothing else."""
     try:
         async for message in query(
             prompt=audit_prompt,
-            options=ClaudeAgentOptions(
+            options=build_agent_options(
                 cwd=str(ROOT),
                 allowed_tools=[],
                 max_turns=1,

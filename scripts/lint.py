@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 
-from config import KNOWLEDGE_DIR, REPORTS_DIR, ROOT_DIR, now_iso, today_iso
+from config import KNOWLEDGE_DIR, REPORTS_DIR, ROOT_DIR, build_agent_options, now_iso, today_iso
 from utils import (
     count_inbound_links,
     extract_wikilinks,
@@ -133,7 +133,6 @@ async def _check_contradictions_async() -> list[dict]:
     """Use Claude Agent SDK to detect contradictions across articles."""
     from claude_agent_sdk import (
         AssistantMessage,
-        ClaudeAgentOptions,
         ResultMessage,
         TextBlock,
         query,
@@ -168,7 +167,7 @@ Do NOT output anything else - no preamble, no explanation, just the formatted li
     try:
         async for message in query(
             prompt=prompt,
-            options=ClaudeAgentOptions(
+            options=build_agent_options(
                 cwd=str(ROOT_DIR),
                 allowed_tools=[],
                 max_turns=2,

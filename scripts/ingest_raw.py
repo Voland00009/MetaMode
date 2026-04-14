@@ -17,7 +17,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from config import AGENTS_FILE, CONCEPTS_DIR, CONNECTIONS_DIR, KNOWLEDGE_DIR, RAW_DIR, ROOT_DIR, now_iso
+from config import AGENTS_FILE, CONCEPTS_DIR, CONNECTIONS_DIR, KNOWLEDGE_DIR, RAW_DIR, ROOT_DIR, build_agent_options, now_iso
 from utils import (
     file_hash,
     list_wiki_articles,
@@ -125,7 +125,6 @@ Read the document above and extract knowledge into wiki articles following the s
 
     from claude_agent_sdk import (
         AssistantMessage,
-        ClaudeAgentOptions,
         ResultMessage,
         TextBlock,
         query,
@@ -134,7 +133,7 @@ Read the document above and extract knowledge into wiki articles following the s
     try:
         async for message in query(
             prompt=prompt,
-            options=ClaudeAgentOptions(
+            options=build_agent_options(
                 cwd=str(ROOT_DIR),
                 system_prompt={"type": "preset", "preset": "claude_code"},
                 allowed_tools=["Read", "Write", "Edit", "Glob", "Grep"],
