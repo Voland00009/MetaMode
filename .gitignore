@@ -39,3 +39,10 @@ Thumbs.db
 
 # Media files (hosted on GitHub Releases, not in git)
 media/
+
+# Personal wiki (not for publication)
+daily/
+knowledge/
+memory/
+raw/
+plans/
