@@ -36,3 +36,6 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Media files (hosted on GitHub Releases, not in git)
+media/
