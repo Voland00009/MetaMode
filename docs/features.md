@@ -1,3 +1,5 @@
+🌐 **English** | [Русский](features.ru.md)
+
 # MetaMode Features
 
 End-to-end documentation of how MetaMode works, from session capture to wiki retrieval.

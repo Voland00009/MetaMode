@@ -1,96 +1,99 @@
+🌐 **English** | [Русский](cheatsheet.ru.md)
+
 # MetaMode Cheatsheet
 
-## Автоматическое (работает само)
+## Automatic (runs on its own)
 
-| Что | Когда | Как |
-|-----|-------|-----|
-| **Session flush** | При завершении сессии Claude Code | Hook `SessionEnd` → `flush.py` в фоне |
-| **Quality audit** | Сразу после flush | Pass 2 в `flush.py` — LLM проверяет качество |
-| **Pre-compact страховка** | При сжатии контекста | Hook `PreCompact` → `flush.py` |
-| **KB index injection** | При старте сессии | Hook `SessionStart` → `session_start.py` |
-| **Auto-compile** | После flush, если > 18:00 | `flush.py` → `compile.py` в фоне |
+| What | When | How |
+|------|------|-----|
+| **Session flush** | Claude Code session ends | Hook `SessionEnd` → `flush.py` in background |
+| **Quality audit** | Right after flush | Pass 2 in `flush.py` — LLM runs quality audit |
+| **Pre-compact backup** | On context compaction | Hook `PreCompact` → `flush.py` |
+| **Wiki injection** | Session start | Hook `SessionStart` → `session_start.py` |
+| **Auto-compile** | After flush, if past 18:00 | `flush.py` → `compile.py` in background |
 
-## Ручные команды
+## Manual commands
 
-### Быстрое сохранение
+### Instant save
 ```
-!save <текст>
+!save <text>
 ```
-Сохраняет заметку в daily log прямо из чата. Поддерживает кириллицу.
+Saves a note to the daily log straight from chat. Blocks the prompt (0 tokens spent).
 
-### Компиляция в wiki
-```
+### Compile into wiki
+```bash
 uv run python scripts/compile.py
-uv run python scripts/compile.py --all          # перекомпилировать всё
-uv run python scripts/compile.py --file <path>  # один файл
-uv run python scripts/compile.py --dry-run      # показать что будет
+uv run python scripts/compile.py --all          # recompile everything
+uv run python scripts/compile.py --file <path>  # one specific file
+uv run python scripts/compile.py --dry-run      # show what would be compiled
 ```
-Или в чате: `/compile`
+Or in chat: `/compile`
 
-Превращает daily logs в wiki-статьи (`knowledge/concepts/`, `knowledge/connections/`).
+Turns daily logs into wiki articles (`knowledge/concepts/`, `knowledge/connections/`).
 
-### Запрос к базе знаний
+### Query the knowledge base
+```bash
+uv run python scripts/query.py "How does X work?"
+uv run python scripts/query.py "Pattern Y" --file-back  # save the answer as a Q&A article
 ```
-uv run python scripts/query.py "Как работает X?"
-uv run python scripts/query.py "Паттерн Y" --file-back  # сохранить ответ как Q&A статью
-```
-Ищет по wiki и синтезирует ответ.
+Searches the wiki and synthesizes an answer.
 
-### Линтер
+### Lint
+```bash
+uv run python scripts/lint.py                    # all 7 checks
+uv run python scripts/lint.py --structural-only  # skip LLM check (faster)
+uv run python scripts/lint.py --include-memory   # also check auto-memory
 ```
-uv run python scripts/lint.py
-```
-7 проверок: broken links, orphan pages, orphan sources, stale articles, missing backlinks, sparse articles, contradictions (LLM).
 
-### Обработка RAW inbox
-```
+### Process the RAW inbox
+```bash
 uv run python scripts/ingest_raw.py
 ```
-Или в чате: скажи `обработай RAW`
+Or in chat: say "process RAW" / "ingest RAW"
 
-Обрабатывает файлы из `raw/` → создаёт wiki-статьи, перемещает в `raw/processed/`.
+Processes files from `raw/` → creates wiki articles, moves them to `raw/processed/`.
 
-### Рефлексия
-В чате: `/reflect`
+### End-of-session reflection
+In chat: `/reflect`
 
-4 вопроса о сессии → структурированная запись в daily log.
+4 structured questions about the session → saved into the daily log.
 
-## Когда что использовать
+## When to use what
 
-| Ситуация | Действие |
-|----------|----------|
-| Узнал что-то важное прямо сейчас | `!save <инсайт>` |
-| Нашёл статью/видео для базы | Сохрани в `raw/`, потом `обработай RAW` |
-| Накопилось 3+ daily logs | `uv run python scripts/compile.py` |
-| Хочешь найти что-то в базе | `uv run python scripts/query.py "вопрос"` |
-| Конец рабочей сессии | `/reflect` (или просто закрой — flush автоматический) |
-| Проверить здоровье wiki | `uv run python scripts/lint.py` |
+| Situation | Action |
+|-----------|--------|
+| Learned something important right now | `!save <insight>` |
+| Found an article/video for the wiki | Save it into `raw/`, then run `ingest_raw.py` |
+| Accumulated 3+ daily logs | `uv run python scripts/compile.py` |
+| Want to find something in the wiki | `uv run python scripts/query.py "question"` |
+| End of a work session | `/reflect` (or just close — auto-flush handles it) |
+| Check wiki health | `uv run python scripts/lint.py` |
 
-## Где что лежит
+## Where things live
 
 ```
-daily/              ← дневные логи (автоматически)
+daily/              ← daily session logs (automatic)
 knowledge/
-  concepts/         ← wiki-статьи (после compile)
-  connections/      ← связи между концептами
-  qa/               ← Q&A статьи (query --file-back)
-  index.md          ← индекс всех статей
-  log.md            ← лог операций
-raw/                ← входящие статьи для обработки
-  processed/        ← обработанные файлы
+  concepts/         ← wiki articles (after compile)
+  connections/      ← links between concepts
+  qa/               ← Q&A articles (query --file-back)
+  index.md          ← index of all articles
+  log.md            ← operations log
+raw/                ← incoming documents for processing
+  processed/        ← processed files (moved automatically)
 scripts/
-  state.json        ← состояние: хэши, счётчики, total_cost
+  state.json        ← state: hashes, counters, total_cost
 ```
 
 ## Quality Audit
 
-Flush автоматически проверяет качество извлечённых данных (Pass 2):
-- Если контент полезный → пишет в daily log как есть
-- Если мусор → помечает `<!-- AUDIT_FLAG: причина -->` (данные НЕ удаляются)
-- Помеченные записи пропускаются при compile
-- Если аудит упал с ошибкой → считаем "всё ОК" (данные не теряются)
+Flush automatically runs a quality audit on extracted data (Pass 2):
+- Content is useful → written to the daily log as-is
+- Content is junk → flagged with `<!-- AUDIT_FLAG: reason -->` (data is NOT deleted)
+- Flagged entries are skipped during compile
+- If the audit itself errors out → content is kept (data is never lost)
 
 ## Cost Tracking
 
-Все LLM-вызовы (compile, query, flush) накапливают стоимость в `scripts/state.json` → поле `total_cost`.
-На Max подписке стоимость = $0.00, но метрика полезна при переходе на API.
+All LLM calls (compile, query, flush) accumulate cost in `scripts/state.json` → `total_cost` field.
+On the Max subscription the cost is $0.00, but the metric is useful if you later switch to the API.

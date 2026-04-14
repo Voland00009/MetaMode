@@ -97,7 +97,7 @@ Full documentation lives in [docs/](docs/).
 
 - [setup.md](docs/setup.md) — step-by-step install for macOS, Linux, Windows (with troubleshooting)
 - [commands.md](docs/commands.md) — every command with flags and examples
-- [cheatsheet.ru.md](docs/cheatsheet.ru.md) — one-page quick reference *(RU only for now — EN translation pending)*
+- [cheatsheet.md](docs/cheatsheet.md) — one-page quick reference
 
 ### Understanding MetaMode
 
