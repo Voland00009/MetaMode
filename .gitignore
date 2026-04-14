@@ -40,9 +40,27 @@ Thumbs.db
 # Media files (hosted on GitHub Releases, not in git)
 media/
 
-# Personal wiki (not for publication)
-daily/
-knowledge/
+# Personal wiki content — keep folder structure via .gitkeep, ignore the content
+# (users' own daily logs, compiled wiki, raw inbox, and plans stay local)
+daily/*
+!daily/.gitkeep
+
+raw/*
+!raw/.gitkeep
+
+plans/*
+!plans/.gitkeep
+
+knowledge/*
+!knowledge/concepts/
+!knowledge/connections/
+!knowledge/qa/
+knowledge/concepts/*
+!knowledge/concepts/.gitkeep
+knowledge/connections/*
+!knowledge/connections/.gitkeep
+knowledge/qa/*
+!knowledge/qa/.gitkeep
+
+# memory/ is not a project folder — hooks write to ~/.claude/projects/*/memory/
 memory/
-raw/
-plans/
