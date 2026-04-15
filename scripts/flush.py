@@ -19,6 +19,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import NamedTuple
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -160,14 +161,29 @@ COMPILE_AFTER_HOUR = 18
 AUDIT_FLAG = "<!-- AUDIT_FLAG:"
 
 
-async def run_quality_audit(content: str) -> str | None:
+class AuditOutcome(NamedTuple):
+    """Result of `run_quality_audit`.
+
+    Fields are mutually exclusive:
+    - both None → audit passed, quality OK
+    - `reject_reason` set → audit flagged content as low-quality
+    - `sdk_error_marker` set → audit itself failed (SDK/runtime error);
+      content is still saved to preserve the never-lose-data policy.
+    """
+
+    reject_reason: str | None = None
+    sdk_error_marker: str | None = None
+
+
+async def run_quality_audit(content: str) -> AuditOutcome:
     """Pass 2: Quick LLM check — does the extracted content contain junk?
 
-    Returns None if quality is OK, or a reason string if content is low-quality.
+    Returns an `AuditOutcome` describing the audit result.
     The caller marks the entry with an HTML comment but NEVER deletes it.
     """
     from claude_agent_sdk import (
         AssistantMessage,
+        ClaudeSDKError,
         ResultMessage,
         TextBlock,
         query,
@@ -217,15 +233,30 @@ Respond with ONLY one of these two formats, nothing else."""
             elif isinstance(message, ResultMessage):
                 if message.total_cost_usd:
                     _accumulate_cost(message.total_cost_usd)
+    except ClaudeSDKError as e:
+        import traceback
+        stderr_text = getattr(e, "stderr", None) or ""
+        exit_code = getattr(e, "exit_code", None)
+        logging.error(
+            "Quality audit SDK error (exit=%s): %s\nstderr: %s\n%s",
+            exit_code, e, stderr_text, traceback.format_exc(),
+        )
+        if stderr_text:
+            for line in str(stderr_text).splitlines():
+                logging.error("  SDK stderr: %s", line)
+        marker = f"AUDIT_SDK_ERROR: exit={exit_code} type={type(e).__name__}"
+        return AuditOutcome(sdk_error_marker=marker)
     except Exception as e:
-        logging.warning("Quality audit failed (non-fatal): %s", e)
-        return None  # On error, assume quality is OK — never lose data
+        import traceback
+        logging.error("Quality audit error: %s\n%s", e, traceback.format_exc())
+        marker = f"AUDIT_SDK_ERROR: exit=None type={type(e).__name__}"
+        return AuditOutcome(sdk_error_marker=marker)
 
     response = response.strip()
     if response.startswith("AUDIT_REJECT:"):
         reason = response[len("AUDIT_REJECT:"):].strip()
-        return reason
-    return None
+        return AuditOutcome(reject_reason=reason)
+    return AuditOutcome()
 
 
 def maybe_trigger_compilation() -> None:
@@ -319,10 +350,18 @@ def main():
         append_to_daily_log(response, "Memory Flush")
     else:
         # Pass 2: Quality audit — check if extracted content is worth keeping
-        audit_reason = asyncio.run(run_quality_audit(response))
-        if audit_reason:
-            logging.info("Audit flagged (%d chars): %s", len(response), audit_reason)
-            flagged_content = f"{AUDIT_FLAG} {audit_reason} -->\n{response}"
+        outcome = asyncio.run(run_quality_audit(response))
+        if outcome.sdk_error_marker:
+            logging.info(
+                "Audit SDK-failed, content saved with marker (%d chars)", len(response)
+            )
+            flagged_content = f"<!-- {outcome.sdk_error_marker} -->\n{response}"
+            append_to_daily_log(flagged_content, f"Session {session_id[:8]}")
+        elif outcome.reject_reason:
+            logging.info(
+                "Audit flagged (%d chars): %s", len(response), outcome.reject_reason
+            )
+            flagged_content = f"{AUDIT_FLAG} {outcome.reject_reason} -->\n{response}"
             append_to_daily_log(flagged_content, f"Session {session_id[:8]}")
         else:
             logging.info("Result: saved to daily log (%d chars)", len(response))
